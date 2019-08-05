@@ -155,10 +155,7 @@ void PackmlRos::handleStateChanged(packml_sm::AbstractStateMachine& state_machin
   }
 
   status_pub_.publish(status_msg_);
-
-  packml_msgs::Stats stats;
-  getCurrentStats(stats);
-  stats_pub_.publish(stats);
+  publishStats();
 }
 
 void PackmlRos::getCurrentStats(packml_msgs::Stats& out_stats)
@@ -222,5 +219,12 @@ bool PackmlRos::resetStats(packml_msgs::ResetStats::Request& req, packml_msgs::R
   sm_->resetStats();
 
   return true;
+}
+
+void PackmlRos::publishStats()
+{
+  packml_msgs::Stats stats;
+  getCurrentStats(stats);
+  stats_pub_.publish(stats);
 }
 }  // namespace kitsune_robot

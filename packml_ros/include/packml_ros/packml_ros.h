@@ -49,6 +49,7 @@ protected:
   packml_msgs::Status status_msg_;
 
   bool transRequest(packml_msgs::Transition::Request& req, packml_msgs::Transition::Response& res);
+  void publishStats();
 
 private:
   void handleStateChanged(packml_sm::AbstractStateMachine& state_machine, const packml_sm::StateChangedEventArgs& args);
