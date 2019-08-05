@@ -30,6 +30,7 @@ PackmlRos::PackmlRos(ros::NodeHandle nh, ros::NodeHandle pn, std::shared_ptr<pac
   ros::NodeHandle packml_node("~/packml");
 
   status_pub_ = packml_node.advertise<packml_msgs::Status>("status", 10, true);
+  stats_pub_ = packml_node.advertise<packml_msgs::Stats>("stats", 10, true);
 
   trans_server_ = packml_node.advertiseService("transition", &PackmlRos::transRequest, this);
   reset_stats_server_ = packml_node.advertiseService("reset_stats", &PackmlRos::resetStats, this);
@@ -154,6 +155,10 @@ void PackmlRos::handleStateChanged(packml_sm::AbstractStateMachine& state_machin
   }
 
   status_pub_.publish(status_msg_);
+
+  packml_msgs::Stats stats;
+  getCurrentStats(stats);
+  stats_pub_.publish(stats);
 }
 
 void PackmlRos::getCurrentStats(packml_msgs::Stats& out_stats)
