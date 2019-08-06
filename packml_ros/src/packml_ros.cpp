@@ -244,6 +244,16 @@ void PackmlRos::publishStatsCb(const ros::TimerEvent&)
 
 void PackmlRos::publishStats()
 {
+  // Check if stats_publish_period changed
+  float stats_publish_period_new;
+  if (pn_.getParam("stats_publish_period", stats_publish_period_new))
+  {
+    if (stats_publish_period_new != stats_publish_period_ && stats_publish_period_new > 0)
+    {
+      stats_timer_ = nh_.createTimer(ros::Duration(stats_publish_period_new), &PackmlRos::publishStatsCb, this);
+    }
+  }
+
   packml_msgs::Stats stats;
   getCurrentStats(stats);
   stats_pub_.publish(stats);
