@@ -54,6 +54,9 @@ void PackmlRos::spin()
 {
   while (ros::ok())
   {
+
+    ROS_ERROR_STREAM(std::endl << std::endl << "PACKML TEST" << std::endl);
+
     spinOnce();
     ros::Duration(0.001).sleep();
   }
