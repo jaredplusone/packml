@@ -36,8 +36,6 @@ public:
   ~PackmlRos();
   void spin();
   void spinOnce();
-  bool getStats(packml_msgs::GetStats::Request& req, packml_msgs::GetStats::Response& response);
-  bool resetStats(packml_msgs::ResetStats::Request& req, packml_msgs::ResetStats::Response& response);
 
 protected:
   ros::NodeHandle nh_;
@@ -57,6 +55,8 @@ protected:
 private:
   void handleStateChanged(packml_sm::AbstractStateMachine& state_machine, const packml_sm::StateChangedEventArgs& args);
   void getCurrentStats(packml_msgs::Stats& out_stats);
+  bool getStats(packml_msgs::GetStats::Request& req, packml_msgs::GetStats::Response& response);
+  bool resetStats(packml_msgs::ResetStats::Request& req, packml_msgs::ResetStats::Response& response);
   void publishStatsCb(const ros::TimerEvent& timer_event);
   void publishStats();
 };
