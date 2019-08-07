@@ -29,7 +29,6 @@ namespace packml_stats_loader
     bool writeStats(const packml_msgs::GetStats::Response& get_stats_response);
 
     ros::NodeHandle pnh_;
-    bool load_stats_;
     std::string packml_stats_location_;
   };
 

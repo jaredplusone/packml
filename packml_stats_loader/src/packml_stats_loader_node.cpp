@@ -11,6 +11,4 @@ int main(int argc, char** argv)
   ros::NodeHandle pnh("~");
 
   packml_stats_loader::PackmlStatsLoader packml_stats_loader(pnh);
-
-  ros::spin();
 }
