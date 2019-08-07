@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   packml_ros
   packml_sm
   roscpp
+  rosbag
 )
 
 catkin_package(
@@ -16,6 +17,7 @@ catkin_package(
     packml_ros
     packml_sm
     roscpp
+    rosbag
   INCLUDE_DIRS
     include
   LIBRARIES

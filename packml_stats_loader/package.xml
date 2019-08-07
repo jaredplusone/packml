@@ -16,5 +16,6 @@
   <depend>packml_ros</depend>
   <depend>packml_sm</depend>
   <depend>roscpp</depend>
+  <depend>rosbag</depend>
 
 </package>

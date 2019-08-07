@@ -7,6 +7,10 @@
 #define SRC_PACKML_STATS_LOADER_H
 
 #include <ros/ros.h>
+#include <rosbag/bag.h>
+#include <rosbag/view.h>
+#include <packml_msgs/GetStats.h>
+#include <packml_msgs/Stats.h>
 
 namespace packml_stats_loader
 {
@@ -21,7 +25,12 @@ namespace packml_stats_loader
     PackmlStatsLoader(const ros::NodeHandle& pnh);
 
   private:
+    bool loadStats();
+    bool writeStats(const packml_msgs::GetStats::Response& get_stats_response);
+
     ros::NodeHandle pnh_;
+    bool load_stats_;
+    std::string packml_stats_location_;
   };
 
 }
