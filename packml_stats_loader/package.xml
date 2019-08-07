@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>packml_stats_loader</name>
+  <version>1000.1.0</version>
+  <description>Utility nodes for packml</description>
+
+  <maintainer email="shaun.edwards@gmail.com">Shaun Edwards</maintainer>
+
+  <license>Apache 2.0</license>
+
+  <author>Shaun Edwards</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>packml_msgs</depend>
+  <depend>packml_ros</depend>
+  <depend>packml_sm</depend>
+  <depend>roscpp</depend>
+
+</package>

@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+
+    <node name="packml_stats_loader" pkg="packml_stats_loader" type="packml_stats_loader" output="screen">
+    </node>
+
+</launch>
