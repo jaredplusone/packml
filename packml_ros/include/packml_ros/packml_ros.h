@@ -24,6 +24,7 @@
 #include <packml_msgs/ResetStats.h>
 #include <packml_msgs/Transition.h>
 #include <packml_msgs/Status.h>
+#include <packml_msgs/Stats.h>
 #include <packml_sm/abstract_state_machine.h>
 
 namespace packml_ros
@@ -41,10 +42,13 @@ protected:
   ros::NodeHandle pn_;
   std::shared_ptr<packml_sm::AbstractStateMachine> sm_;
   ros::Publisher status_pub_;
+  ros::Publisher stats_pub_;
   ros::ServiceServer trans_server_;
   ros::ServiceServer reset_stats_server_;
   ros::ServiceServer get_stats_server_;
   packml_msgs::Status status_msg_;
+  float stats_publish_period_;
+  ros::Timer stats_timer_;
 
   bool transRequest(packml_msgs::Transition::Request& req, packml_msgs::Transition::Response& res);
 
@@ -53,6 +57,8 @@ private:
   void getCurrentStats(packml_msgs::Stats& out_stats);
   bool getStats(packml_msgs::GetStats::Request& req, packml_msgs::GetStats::Response& response);
   bool resetStats(packml_msgs::ResetStats::Request& req, packml_msgs::ResetStats::Response& response);
+  void publishStatsCb(const ros::TimerEvent& timer_event);
+  void publishStats();
 };
 }  // namespace packml_ros
 
