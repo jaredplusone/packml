@@ -37,31 +37,34 @@ namespace packml_stats_loader
       }
     }
 
-    ros::ServiceClient get_stats_client = pnh_.serviceClient<packml_msgs::GetStats>("get_stats");
-    ros::service::waitForService(get_stats_client.getService());
-    ros::Rate rate(save_stats_rate);
-    packml_msgs::GetStats get_stats_srv;
-
-    while (ros::ok)
+    if (save_stats_rate > 0)
     {
-      if (!get_stats_client.call(get_stats_srv))
+      ros::ServiceClient get_stats_client = pnh_.serviceClient<packml_msgs::GetStats>("get_stats");
+      ros::service::waitForService(get_stats_client.getService());
+      ros::Rate rate(save_stats_rate);
+      packml_msgs::GetStats get_stats_srv;
+
+      while (ros::ok)
       {
-        ROS_ERROR_STREAM("Failed to call service " << get_stats_client.getService());
-      }
-      else
-      {
-        if (!writeStats(get_stats_srv.response))
+        if (!get_stats_client.call(get_stats_srv))
         {
-          ROS_ERROR_STREAM("Failed to write packml stats");
+          ROS_ERROR_STREAM("Failed to call service " << get_stats_client.getService());
         }
         else
         {
-          ROS_INFO_STREAM("Successfully wrote packml stats");
+          if (!writeStats(get_stats_srv.response))
+          {
+            ROS_ERROR_STREAM("Failed to write packml stats");
+          }
+          else
+          {
+            ROS_INFO_STREAM("Successfully wrote packml stats");
+          }
         }
-      }
 
-      ros::spinOnce();
-      rate.sleep();
+        ros::spinOnce();
+        rate.sleep();
+      }
     }
   }
 
