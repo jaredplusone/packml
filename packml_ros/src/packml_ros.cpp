@@ -24,12 +24,14 @@
 
 namespace packml_ros
 {
+
 PackmlRos::PackmlRos(ros::NodeHandle nh, ros::NodeHandle pn, std::shared_ptr<packml_sm::AbstractStateMachine> sm)
   : nh_(nh), pn_(pn), sm_(sm)
 {
   ros::NodeHandle packml_node("~/packml");
 
   status_pub_ = packml_node.advertise<packml_msgs::Status>("status", 10, true);
+  stats_pub_ = packml_node.advertise<packml_msgs::Stats>("stats", 10, true);
 
   trans_server_ = packml_node.advertiseService("transition", &PackmlRos::transRequest, this);
   reset_stats_server_ = packml_node.advertiseService("reset_stats", &PackmlRos::resetStats, this);
@@ -37,8 +39,23 @@ PackmlRos::PackmlRos(ros::NodeHandle nh, ros::NodeHandle pn, std::shared_ptr<pac
 
   status_msg_ = packml_msgs::initStatus(pn.getNamespace());
 
+  if (!pn_.getParam("stats_publish_period", stats_publish_period_))
+  {
+    ROS_WARN_STREAM("Missing param: stats_publish_period. Defaulting to 1 second");
+    stats_publish_period_ = 1;
+  }
+  if(stats_publish_period_ <= 0)
+  {
+    ROS_WARN_STREAM("stats_publish_period <= 0. stats will not be published regularly");
+  }
+  else
+  {
+    stats_timer_ = nh_.createTimer(ros::Duration(stats_publish_period_), &PackmlRos::publishStatsCb, this);
+  }
+
   sm_->stateChangedEvent.bind_member_func(this, &PackmlRos::handleStateChanged);
   sm_->activate();
+
 }
 
 PackmlRos::~PackmlRos()
@@ -154,6 +171,7 @@ void PackmlRos::handleStateChanged(packml_sm::AbstractStateMachine& state_machin
   }
 
   status_pub_.publish(status_msg_);
+  publishStats();
 }
 
 void PackmlRos::getCurrentStats(packml_msgs::Stats& out_stats)
@@ -217,5 +235,27 @@ bool PackmlRos::resetStats(packml_msgs::ResetStats::Request& req, packml_msgs::R
   sm_->resetStats();
 
   return true;
+}
+
+void PackmlRos::publishStatsCb(const ros::TimerEvent&)
+{
+  publishStats();
+}
+
+void PackmlRos::publishStats()
+{
+  // Check if stats_publish_period changed
+  float stats_publish_period_new;
+  if (pn_.getParam("stats_publish_period", stats_publish_period_new))
+  {
+    if (stats_publish_period_new != stats_publish_period_ && stats_publish_period_new > 0)
+    {
+      stats_timer_ = nh_.createTimer(ros::Duration(stats_publish_period_new), &PackmlRos::publishStatsCb, this);
+    }
+  }
+
+  packml_msgs::Stats stats;
+  getCurrentStats(stats);
+  stats_pub_.publish(stats);
 }
 }  // namespace kitsune_robot
