@@ -60,6 +60,7 @@ private:
   bool getStats(packml_msgs::GetStats::Request& req, packml_msgs::GetStats::Response& response);
   bool resetStats(packml_msgs::ResetStats::Request& req, packml_msgs::ResetStats::Response& response);
   bool loadStats(packml_msgs::LoadStats::Request& req, packml_msgs::LoadStats::Response& response);
+  packml_sm::PackmlStatsSnapshot populateStatsSnapshot(const packml_msgs::Stats& msg);
   void publishStatsCb(const ros::TimerEvent& timer_event);
   void publishStats();
 };

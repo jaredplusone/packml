@@ -229,6 +229,23 @@ void AbstractStateMachine::getCurrentStatSnapshot(PackmlStatsSnapshot& snapshot_
   snapshot_out.itemized_quality_map = itemized_quality_map_;
 }
 
+void AbstractStateMachine::loadStats(const PackmlStatsSnapshot &snapshot)
+{
+  setStateDuration(StatesEnum::IDLE, snapshot.idle_duration);
+  setStateDuration(StatesEnum::EXECUTE, snapshot.exe_duration);
+  setStateDuration(StatesEnum::HELD, snapshot.held_duration);
+  setStateDuration(StatesEnum::SUSPENDED, snapshot.susp_duration);
+  setStateDuration(StatesEnum::COMPLETE, snapshot.cmplt_duration);
+  setStateDuration(StatesEnum::STOPPED, snapshot.stop_duration);
+  setStateDuration(StatesEnum::ABORTED, snapshot.abort_duration);
+  success_count_ = snapshot.success_count;
+  failure_count_ = snapshot.fail_count;
+  itemized_error_map_ = snapshot.itemized_error_map;
+  itemized_quality_map_ = snapshot.itemized_quality_map;
+
+  std::cout << "LOADED SNAPSHOT !" << std::endl;
+}
+
 double AbstractStateMachine::getIdleTime()
 {
   return getStateDuration(StatesEnum::IDLE);
@@ -430,5 +447,11 @@ double AbstractStateMachine::getStateDuration(StatesEnum state)
   }
 
   return elapsed_time;
+}
+
+void AbstractStateMachine::setStateDuration(StatesEnum state, double duration)
+{
+  std::lock_guard<std::recursive_mutex> lock(stat_mutex_);
+  duration_map_[state] = duration;
 }
 }  // namespace packml_sm

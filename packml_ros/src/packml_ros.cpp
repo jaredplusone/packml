@@ -18,6 +18,7 @@
 
 #include "packml_ros/packml_ros.h"
 #include "packml_sm/packml_stats_snapshot.h"
+#include "packml_sm/packml_stats_itemized.h"
 
 #include <packml_msgs/utils.h>
 #include "packml_msgs/ItemizedStats.h"
@@ -218,6 +219,51 @@ void PackmlRos::getCurrentStats(packml_msgs::Stats& out_stats)
   out_stats.header.stamp = ros::Time::now();
 }
 
+packml_sm::PackmlStatsSnapshot PackmlRos::populateStatsSnapshot(const packml_msgs::Stats &msg)
+{
+  packml_sm::PackmlStatsSnapshot snapshot;
+
+  snapshot.cycle_count = msg.cycle_count;
+  snapshot.success_count = msg.success_count;
+  snapshot.fail_count = msg.fail_count;
+  snapshot.throughput = msg.throughput;
+  snapshot.availability = msg.availability;
+  snapshot.performance = msg.performance;
+  snapshot.quality = msg.quality;
+  snapshot.overall_equipment_effectiveness = msg.overall_equipment_effectiveness;
+
+  snapshot.duration = msg.duration.data.toSec();
+  snapshot.idle_duration = msg.idle_duration.data.toSec();
+  snapshot.exe_duration = msg.exe_duration.data.toSec();
+  snapshot.held_duration = msg.held_duration.data.toSec();
+  snapshot.susp_duration = msg.susp_duration.data.toSec();
+  snapshot.cmplt_duration = msg.cmplt_duration.data.toSec();
+  snapshot.stop_duration = msg.stop_duration.data.toSec();
+  snapshot.abort_duration = msg.abort_duration.data.toSec();
+
+  std::map<int16_t, packml_sm::PackmlStatsItemized> itemized_error_map;
+  for (const auto& error_item : msg.error_items)
+  {
+    packml_sm::PackmlStatsItemized item;
+    item.id = error_item.id;
+    item.count = error_item.count;
+    item.duration = error_item.duration.data.toSec();
+    itemized_error_map.insert(std::pair<int16_t, packml_sm::PackmlStatsItemized>(error_item.id, item));
+  }
+
+  std::map<int16_t, packml_sm::PackmlStatsItemized> itemized_quality_map;
+  for (const auto& quality_item : msg.quality_items)
+  {
+    packml_sm::PackmlStatsItemized item;
+    item.id = quality_item.id;
+    item.count = quality_item.count;
+    item.duration = quality_item.duration.data.toSec();
+    itemized_error_map.insert(std::pair<int16_t, packml_sm::PackmlStatsItemized>(quality_item.id, item));
+  }
+
+  return snapshot;
+}
+
 bool PackmlRos::getStats(packml_msgs::GetStats::Request& req, packml_msgs::GetStats::Response& response)
 {
   packml_msgs::Stats stats;
@@ -262,6 +308,7 @@ void PackmlRos::publishStats()
 
 bool PackmlRos::loadStats(packml_msgs::LoadStats::Request &req, packml_msgs::LoadStats::Response &response)
 {
-  ROS_ERROR_STREAM("PACKML_STATS_LOADER SIDE " << req.stats.availability);
+  packml_sm::PackmlStatsSnapshot snapshot = populateStatsSnapshot(req.stats);
+  sm_->loadStats(snapshot);
 }
 }  // namespace kitsune_robot
