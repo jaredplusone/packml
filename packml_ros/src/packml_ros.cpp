@@ -36,6 +36,7 @@ PackmlRos::PackmlRos(ros::NodeHandle nh, ros::NodeHandle pn, std::shared_ptr<pac
   trans_server_ = packml_node.advertiseService("transition", &PackmlRos::transRequest, this);
   reset_stats_server_ = packml_node.advertiseService("reset_stats", &PackmlRos::resetStats, this);
   get_stats_server_ = packml_node.advertiseService("get_stats", &PackmlRos::getStats, this);
+  load_stats_server_ = packml_node.advertiseService("load_stats", &PackmlRos::loadStats, this);
 
   status_msg_ = packml_msgs::initStatus(pn.getNamespace());
 
@@ -257,5 +258,10 @@ void PackmlRos::publishStats()
   packml_msgs::Stats stats;
   getCurrentStats(stats);
   stats_pub_.publish(stats);
+}
+
+bool PackmlRos::loadStats(packml_msgs::LoadStats::Request &req, packml_msgs::LoadStats::Response &response)
+{
+  ROS_ERROR_STREAM("PACKML_STATS_LOADER SIDE " << req.stats.availability);
 }
 }  // namespace kitsune_robot

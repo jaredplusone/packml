@@ -22,6 +22,7 @@
 
 #include <packml_msgs/GetStats.h>
 #include <packml_msgs/ResetStats.h>
+#include <packml_msgs/LoadStats.h>
 #include <packml_msgs/Transition.h>
 #include <packml_msgs/Status.h>
 #include <packml_msgs/Stats.h>
@@ -46,6 +47,7 @@ protected:
   ros::ServiceServer trans_server_;
   ros::ServiceServer reset_stats_server_;
   ros::ServiceServer get_stats_server_;
+  ros::ServiceServer load_stats_server_;
   packml_msgs::Status status_msg_;
   float stats_publish_period_;
   ros::Timer stats_timer_;
@@ -57,6 +59,7 @@ private:
   void getCurrentStats(packml_msgs::Stats& out_stats);
   bool getStats(packml_msgs::GetStats::Request& req, packml_msgs::GetStats::Response& response);
   bool resetStats(packml_msgs::ResetStats::Request& req, packml_msgs::ResetStats::Response& response);
+  bool loadStats(packml_msgs::LoadStats::Request& req, packml_msgs::LoadStats::Response& response);
   void publishStatsCb(const ros::TimerEvent& timer_event);
   void publishStats();
 };

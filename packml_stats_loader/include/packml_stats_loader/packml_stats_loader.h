@@ -10,6 +10,7 @@
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
 #include <packml_msgs/GetStats.h>
+#include <packml_msgs/LoadStats.h>
 #include <packml_msgs/Stats.h>
 
 namespace packml_stats_loader

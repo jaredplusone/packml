@@ -9,17 +9,15 @@ namespace packml_stats_loader
 {
   PackmlStatsLoader::PackmlStatsLoader(const ros::NodeHandle &pnh): pnh_(pnh)
   {
-
-    // Get params
     if (!pnh_.getParam("packml_stats_location", packml_stats_location_))
     {
       ROS_FATAL_STREAM("Missing param: packml_stats_location. Unable to load or save stats. Shutting down.");
       ros::shutdown();
     }
-    bool load_stats = false;
-    if (!pnh_.getParam("load_stats", load_stats))
+    bool load_packml_stats = false;
+    if (!pnh_.getParam("load_packml_stats", load_packml_stats))
     {
-      ROS_WARN_STREAM("Missing param: load_stats. Defaulting to false.");
+      ROS_WARN_STREAM("Missing param: load_packml_stats. Defaulting to false.");
     }
     float save_stats_rate = 1.0;
     if (!pnh_.getParam("save_stats_rate", save_stats_rate))
@@ -27,27 +25,25 @@ namespace packml_stats_loader
       ROS_WARN_STREAM("Missing param: save_stats_rate. Defaulting to 1.0Hz.");
     }
 
-    // Load stats
-    if (load_stats)
+    if (load_packml_stats)
     {
       if (!loadStats())
       {
-        ROS_ERROR_STREAM("Failed to load stats");
+        ROS_ERROR_STREAM("Failed to load packml stats");
       }
       else
       {
-        ROS_INFO_STREAM("Successfully loaded stats");
+        ROS_INFO_STREAM("Successfully loaded packml stats");
       }
     }
 
-    // Save stats
     ros::ServiceClient get_stats_client = pnh_.serviceClient<packml_msgs::GetStats>("get_stats");
     ros::service::waitForService(get_stats_client.getService());
     ros::Rate rate(save_stats_rate);
+    packml_msgs::GetStats get_stats_srv;
 
     while (ros::ok)
     {
-      packml_msgs::GetStats get_stats_srv;
       if (!get_stats_client.call(get_stats_srv))
       {
         ROS_ERROR_STREAM("Failed to call service " << get_stats_client.getService());
@@ -56,11 +52,11 @@ namespace packml_stats_loader
       {
         if (!writeStats(get_stats_srv.response))
         {
-          ROS_ERROR_STREAM("Failed to write stats");
+          ROS_ERROR_STREAM("Failed to write packml stats");
         }
         else
         {
-          ROS_INFO_STREAM("Successfully saved stats");
+          ROS_INFO_STREAM("Successfully wrote packml stats");
         }
       }
 
@@ -82,11 +78,25 @@ namespace packml_stats_loader
       return false;
     }
 
+    ros::ServiceClient load_stats_client = pnh_.serviceClient<packml_msgs::LoadStats>("load_stats");
+    ros::service::waitForService(load_stats_client.getService());
+
     for(const auto& message_instance : rosbag::View(bag))
     {
       if (message_instance.isType<packml_msgs::Stats>())
       {
-        auto message = message_instance.instantiate<packml_msgs::Stats>();
+        auto msg = message_instance.instantiate<packml_msgs::Stats>();
+        ROS_ERROR_STREAM("PACKML_STATS_LOADER SIDE " << msg->availability);
+        packml_msgs::LoadStats load_stats_srv;
+        load_stats_srv.request.stats = *msg;
+        if (!load_stats_client.call(load_stats_srv))
+        {
+          ROS_ERROR_STREAM("Failed to call service " << load_stats_client.getService());
+        }
+        else
+        {
+          ROS_INFO_STREAM("Successfully loaded packml stats");
+        }
       }
     }
 
@@ -97,6 +107,7 @@ namespace packml_stats_loader
   bool PackmlStatsLoader::writeStats(const packml_msgs::GetStats::Response& get_stats_response)
   {
     packml_msgs::Stats stats_msg = get_stats_response.stats;
+    ROS_INFO_STREAM(stats_msg.availability);
     rosbag::Bag bag;
 
     try
