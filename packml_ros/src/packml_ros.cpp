@@ -250,6 +250,7 @@ packml_sm::PackmlStatsSnapshot PackmlRos::populateStatsSnapshot(const packml_msg
     item.duration = error_item.duration.data.toSec();
     itemized_error_map.insert(std::pair<int16_t, packml_sm::PackmlStatsItemized>(error_item.id, item));
   }
+  snapshot.itemized_error_map = itemized_error_map;
 
   std::map<int16_t, packml_sm::PackmlStatsItemized> itemized_quality_map;
   for (const auto& quality_item : msg.quality_items)
@@ -258,8 +259,9 @@ packml_sm::PackmlStatsSnapshot PackmlRos::populateStatsSnapshot(const packml_msg
     item.id = quality_item.id;
     item.count = quality_item.count;
     item.duration = quality_item.duration.data.toSec();
-    itemized_error_map.insert(std::pair<int16_t, packml_sm::PackmlStatsItemized>(quality_item.id, item));
+    itemized_quality_map.insert(std::pair<int16_t, packml_sm::PackmlStatsItemized>(quality_item.id, item));
   }
+  snapshot.itemized_quality_map = itemized_quality_map;
 
   return snapshot;
 }

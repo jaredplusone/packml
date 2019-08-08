@@ -229,21 +229,6 @@ void AbstractStateMachine::getCurrentStatSnapshot(PackmlStatsSnapshot& snapshot_
   snapshot_out.itemized_quality_map = itemized_quality_map_;
 }
 
-void AbstractStateMachine::loadStats(const PackmlStatsSnapshot &snapshot)
-{
-  setStateDuration(StatesEnum::IDLE, snapshot.idle_duration);
-  setStateDuration(StatesEnum::EXECUTE, snapshot.exe_duration);
-  setStateDuration(StatesEnum::HELD, snapshot.held_duration);
-  setStateDuration(StatesEnum::SUSPENDED, snapshot.susp_duration);
-  setStateDuration(StatesEnum::COMPLETE, snapshot.cmplt_duration);
-  setStateDuration(StatesEnum::STOPPED, snapshot.stop_duration);
-  setStateDuration(StatesEnum::ABORTED, snapshot.abort_duration);
-  success_count_ = snapshot.success_count;
-  failure_count_ = snapshot.fail_count;
-  itemized_error_map_ = snapshot.itemized_error_map;
-  itemized_quality_map_ = snapshot.itemized_quality_map;
-}
-
 double AbstractStateMachine::getIdleTime()
 {
   return getStateDuration(StatesEnum::IDLE);
@@ -356,6 +341,21 @@ void AbstractStateMachine::resetStats()
     itemized_it.second.count = 0;
     itemized_it.second.duration = 0;
   }
+}
+
+void AbstractStateMachine::loadStats(const PackmlStatsSnapshot &snapshot)
+{
+  setStateDuration(StatesEnum::IDLE, snapshot.idle_duration);
+  setStateDuration(StatesEnum::EXECUTE, snapshot.exe_duration);
+  setStateDuration(StatesEnum::HELD, snapshot.held_duration);
+  setStateDuration(StatesEnum::SUSPENDED, snapshot.susp_duration);
+  setStateDuration(StatesEnum::COMPLETE, snapshot.cmplt_duration);
+  setStateDuration(StatesEnum::STOPPED, snapshot.stop_duration);
+  setStateDuration(StatesEnum::ABORTED, snapshot.abort_duration);
+  success_count_ = snapshot.success_count;
+  failure_count_ = snapshot.fail_count;
+  itemized_error_map_ = snapshot.itemized_error_map;
+  itemized_quality_map_ = snapshot.itemized_quality_map;
 }
 
 void AbstractStateMachine::incrementMapStatItem(std::map<int16_t, PackmlStatsItemized>& itemized_map, int16_t id,
