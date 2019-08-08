@@ -242,8 +242,6 @@ void AbstractStateMachine::loadStats(const PackmlStatsSnapshot &snapshot)
   failure_count_ = snapshot.fail_count;
   itemized_error_map_ = snapshot.itemized_error_map;
   itemized_quality_map_ = snapshot.itemized_quality_map;
-
-  std::cout << "LOADED SNAPSHOT !" << std::endl;
 }
 
 double AbstractStateMachine::getIdleTime()

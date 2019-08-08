@@ -3,7 +3,7 @@
 
     <arg name="packml_stats_location" default="$(find packml_stats_loader)/config/packml_stats.bag" doc="Location to save and load packml stats from"/>
     <arg name="load_packml_stats" default="true" doc="Flag to load stats or not"/>
-    <arg name="save_stats_rate" default="0.1" doc="Rate to write stats to disk in Hz. A value <= 0 will not save at all"/>
+    <arg name="save_stats_rate" default="0.1" doc="Rate to write stats to disk in Hz. A value of 0 or less will not save at all"/>
 
     <node name="packml_stats_loader" pkg="packml_stats_loader" type="packml_stats_loader" output="screen">
         <param name="packml_stats_location" value="$(arg packml_stats_location)"/>

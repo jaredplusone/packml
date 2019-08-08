@@ -58,7 +58,7 @@ namespace packml_stats_loader
           }
           else
           {
-            ROS_INFO_STREAM("Successfully wrote packml stats");
+            ROS_DEBUG_STREAM("Successfully wrote packml stats");
           }
         }
 
@@ -89,16 +89,11 @@ namespace packml_stats_loader
       if (message_instance.isType<packml_msgs::Stats>())
       {
         auto msg = message_instance.instantiate<packml_msgs::Stats>();
-        ROS_ERROR_STREAM("PACKML_STATS_LOADER SIDE " << msg->availability);
         packml_msgs::LoadStats load_stats_srv;
         load_stats_srv.request.stats = *msg;
         if (!load_stats_client.call(load_stats_srv))
         {
           ROS_ERROR_STREAM("Failed to call service " << load_stats_client.getService());
-        }
-        else
-        {
-          ROS_INFO_STREAM("Successfully loaded packml stats");
         }
       }
     }
@@ -110,7 +105,6 @@ namespace packml_stats_loader
   bool PackmlStatsLoader::writeStats(const packml_msgs::GetStats::Response& get_stats_response)
   {
     packml_msgs::Stats stats_msg = get_stats_response.stats;
-    ROS_INFO_STREAM(stats_msg.availability);
     rosbag::Bag bag;
 
     try
