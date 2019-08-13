@@ -24,11 +24,10 @@ namespace packml_stats_loader
      * @param pnh Private node handle
      */
     PackmlStatsLoader(const ros::NodeHandle& pnh);
-
-  private:
     packml_msgs::Stats loadStats();
     void writeStats(const packml_msgs::GetStats::Response& get_stats_response);
 
+  private:
     ros::NodeHandle pnh_;
     std::string packml_stats_location_;
   };
