@@ -25,6 +25,8 @@
 #include "ros/duration.h"
 #include "ros/console.h"
 #include "ros/rate.h"
+#include "packml_sm/packml_stats_snapshot.h"
+#include "packml_sm/packml_stats_itemized.h"
 
 namespace packml_sm_test
 {
@@ -227,4 +229,73 @@ TEST(Packml_CC, state_diagram)
   EXPECT_FALSE(sm->isActive());
   ROS_INFO_STREAM("State diagram test complete");
 }
+
+TEST(Packml_CC, load_stats)
+{
+  ROS_INFO_STREAM("CONTINUOUS CYCLE::Load stats");
+  std::shared_ptr<AbstractStateMachine> sm = PackmlStateMachineContinuous::spawn();
+
+  packml_sm::PackmlStatsSnapshot snapshot_read;
+  sm->getCurrentStatSnapshot(snapshot_read);
+  ASSERT_EQ(snapshot_read.idle_duration, 0);
+  ASSERT_EQ(snapshot_read.exe_duration, 0);
+  ASSERT_EQ(snapshot_read.held_duration, 0);
+  ASSERT_EQ(snapshot_read.susp_duration, 0);
+  ASSERT_EQ(snapshot_read.cmplt_duration, 0);
+  ASSERT_EQ(snapshot_read.stop_duration, 0);
+  ASSERT_EQ(snapshot_read.abort_duration, 0);
+  ASSERT_EQ(snapshot_read.success_count, 0);
+  ASSERT_EQ(snapshot_read.fail_count, 0);
+  ASSERT_EQ(snapshot_read.itemized_error_map.size(), 0);
+  ASSERT_EQ(snapshot_read.itemized_quality_map.size(), 0);
+
+  packml_sm::PackmlStatsSnapshot snapshot_load;
+  snapshot_load.idle_duration = 1;
+  snapshot_load.exe_duration = 2;
+  snapshot_load.held_duration = 3;
+  snapshot_load.susp_duration = 4;
+  snapshot_load.cmplt_duration = 5;
+  snapshot_load.stop_duration = 6;
+  snapshot_load.abort_duration = 7;
+  snapshot_load.success_count = 8;
+  snapshot_load.fail_count = 9;
+
+  std::map<int16_t, packml_sm::PackmlStatsItemized> itemized_error_map;
+  packml_sm::PackmlStatsItemized error_item;
+  error_item.id = 123;
+  error_item.count = 456;
+  error_item.duration = 789;
+  itemized_error_map.insert(std::pair<int16_t, packml_sm::PackmlStatsItemized>(error_item.id, error_item));
+  snapshot_load.itemized_error_map = itemized_error_map;
+
+  std::map<int16_t, packml_sm::PackmlStatsItemized> itemized_quality_map;
+  packml_sm::PackmlStatsItemized quality_item;
+  quality_item.id = 111;
+  quality_item.count = 222;
+  quality_item.duration = 333;
+  itemized_quality_map.insert(std::pair<int16_t, packml_sm::PackmlStatsItemized>(quality_item.id, quality_item));
+  snapshot_load.itemized_quality_map = itemized_quality_map;
+
+  sm->loadStats(snapshot_load);
+
+  sm->getCurrentStatSnapshot(snapshot_read);
+  ASSERT_EQ(snapshot_read.idle_duration, 1);
+  ASSERT_EQ(snapshot_read.exe_duration, 2);
+  ASSERT_EQ(snapshot_read.held_duration, 3);
+  ASSERT_EQ(snapshot_read.susp_duration, 4);
+  ASSERT_EQ(snapshot_read.cmplt_duration, 5);
+  ASSERT_EQ(snapshot_read.stop_duration, 6);
+  ASSERT_EQ(snapshot_read.abort_duration, 7);
+  ASSERT_EQ(snapshot_read.success_count, 8);
+  ASSERT_EQ(snapshot_read.fail_count, 9);
+  ASSERT_EQ(snapshot_read.itemized_error_map.at(123).id, 123);
+  ASSERT_EQ(snapshot_read.itemized_error_map.at(123).count, 456);
+  ASSERT_EQ(snapshot_read.itemized_error_map.at(123).duration, 789);
+  ASSERT_EQ(snapshot_read.itemized_quality_map.at(111).id, 111);
+  ASSERT_EQ(snapshot_read.itemized_quality_map.at(111).count, 222);
+  ASSERT_EQ(snapshot_read.itemized_quality_map.at(111).duration, 333);
+
+  ROS_INFO_STREAM("load stats test complete");
+}
+
 }

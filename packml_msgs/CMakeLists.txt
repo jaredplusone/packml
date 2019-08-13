@@ -19,6 +19,7 @@ add_service_files(
     ModeChange.srv
     Transition.srv
     ResetStats.srv
+    LoadStats.srv
 )
 
 

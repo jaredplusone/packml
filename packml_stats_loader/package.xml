@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>packml_stats_loader</name>
+  <version>1000.1.0</version>
+  <description>Utility node that loads and saves packml stats</description>
+
+  <maintainer email="charles.costello@plusonerobotics.com">Charles Costello</maintainer>
+
+  <license>Apache 2.0</license>
+
+  <author>Charles Costello</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>packml_msgs</depend>
+  <depend>packml_ros</depend>
+  <depend>packml_sm</depend>
+  <depend>roscpp</depend>
+  <depend>rosbag</depend>
+
+</package>
