@@ -234,11 +234,6 @@ TEST(Packml_CC, load_stats)
 {
   ROS_INFO_STREAM("CONTINUOUS CYCLE::Load stats");
   std::shared_ptr<AbstractStateMachine> sm = PackmlStateMachineContinuous::spawn();
-  EXPECT_FALSE(sm->isActive());
-  sm->setExecute(std::bind(success));
-  sm->activate();
-  ros::Duration(1.0).sleep();  // give time to start
-  EXPECT_TRUE(sm->isActive());
 
   packml_sm::PackmlStatsSnapshot snapshot_read;
   sm->getCurrentStatSnapshot(snapshot_read);
@@ -248,7 +243,7 @@ TEST(Packml_CC, load_stats)
   ASSERT_EQ(snapshot_read.susp_duration, 0);
   ASSERT_EQ(snapshot_read.cmplt_duration, 0);
   ASSERT_EQ(snapshot_read.stop_duration, 0);
-  ASSERT_TRUE(snapshot_read.abort_duration > 0);
+  ASSERT_EQ(snapshot_read.abort_duration, 0);
   ASSERT_EQ(snapshot_read.success_count, 0);
   ASSERT_EQ(snapshot_read.fail_count, 0);
   ASSERT_EQ(snapshot_read.itemized_error_map.size(), 0);
@@ -290,7 +285,7 @@ TEST(Packml_CC, load_stats)
   ASSERT_EQ(snapshot_read.susp_duration, 4);
   ASSERT_EQ(snapshot_read.cmplt_duration, 5);
   ASSERT_EQ(snapshot_read.stop_duration, 6);
-  ASSERT_TRUE(snapshot_read.abort_duration > 7);
+  ASSERT_EQ(snapshot_read.abort_duration, 7);
   ASSERT_EQ(snapshot_read.success_count, 8);
   ASSERT_EQ(snapshot_read.fail_count, 9);
   ASSERT_EQ(snapshot_read.itemized_error_map.at(123).id, 123);
@@ -300,9 +295,6 @@ TEST(Packml_CC, load_stats)
   ASSERT_EQ(snapshot_read.itemized_quality_map.at(111).count, 222);
   ASSERT_EQ(snapshot_read.itemized_quality_map.at(111).duration, 333);
 
-  sm->deactivate();
-  ros::Duration(1).sleep();
-  EXPECT_FALSE(sm->isActive());
   ROS_INFO_STREAM("load stats test complete");
 }
 
