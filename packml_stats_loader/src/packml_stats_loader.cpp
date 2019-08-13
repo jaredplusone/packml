@@ -53,7 +53,7 @@ namespace packml_stats_loader
       ros::Rate rate(save_stats_rate);
       packml_msgs::GetStats get_stats_srv;
 
-      while (ros::ok)
+      while (ros::ok())
       {
         if (!get_stats_client.call(get_stats_srv))
         {

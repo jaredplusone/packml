@@ -2,13 +2,13 @@
 <package format="2">
   <name>packml_stats_loader</name>
   <version>1000.1.0</version>
-  <description>Utility nodes for packml</description>
+  <description>Utility node that loads and saves packml stats</description>
 
-  <maintainer email="shaun.edwards@gmail.com">Shaun Edwards</maintainer>
+  <maintainer email="charles.costello@plusonerobotics.com">Charles Costello</maintainer>
 
   <license>Apache 2.0</license>
 
-  <author>Shaun Edwards</author>
+  <author>Charles Costello</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 
