@@ -37,7 +37,8 @@ namespace packml_stats_loader
 
       if (!load_stats_client.call(load_stats_srv))
       {
-        ROS_ERROR_STREAM("Failed to call service " << load_stats_client.getService());
+        ROS_FATAL_STREAM("Failed to call service " << load_stats_client.getService());
+        ros::shutdown();
       }
       else
       {
@@ -79,7 +80,7 @@ namespace packml_stats_loader
     }
     catch (const std::exception &ex)
     {
-      ROS_ERROR_STREAM("Failed to open bag with exception: " << ex.what());
+      ROS_FATAL_STREAM("Failed to open bag with exception: " << ex.what());
       ros::shutdown();
     }
 
