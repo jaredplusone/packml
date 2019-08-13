@@ -78,9 +78,9 @@ namespace packml_stats_loader
     {
       bag.open(packml_stats_location_, rosbag::bagmode::Read);
     }
-    catch (const rosbag::BagException& exception)
+    catch (const rosbag::BagException& ex)
     {
-      ROS_FATAL_STREAM("Failed to open bag with exception: " << exception.what());
+      ROS_FATAL_STREAM("Failed to open bag with exception: " << ex.what());
       ros::shutdown();
     }
 
@@ -103,9 +103,9 @@ namespace packml_stats_loader
     {
       bag.open(packml_stats_location_, rosbag::bagmode::Write);
     }
-    catch (const rosbag::BagException& exception)
+    catch (const rosbag::BagException& ex)
     {
-      ROS_FATAL_STREAM("Failed to open bag with exception: " << exception.what());
+      ROS_FATAL_STREAM("Failed to open bag with exception: " << ex.what());
       ros::shutdown();
     }
 
