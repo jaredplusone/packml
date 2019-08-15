@@ -312,5 +312,7 @@ bool PackmlRos::loadStats(packml_msgs::LoadStats::Request &req, packml_msgs::Loa
 {
   packml_sm::PackmlStatsSnapshot snapshot = populateStatsSnapshot(req.stats);
   sm_->loadStats(snapshot);
+
+  return true;
 }
 }  // namespace kitsune_robot
