@@ -290,6 +290,13 @@ public:
   void resetStats();
 
   /**
+   * @brief Load all of the tracked states.
+   *
+   * @param snapshot snapshot stats data used to load stats
+   */
+  void loadStats(const PackmlStatsSnapshot& snapshot);
+
+  /**
    * @brief Call to increment or add a specific Itemized error stat.
    *
    */
@@ -490,6 +497,14 @@ private:
    * @return double Returns the total time spent in the given state.
    */
   double getStateDuration(StatesEnum state);
+
+  /**
+   * @brief Setter for the given state duration.
+   *
+   * @param state The state of interest.
+   * @return double Returns the total time spent in the given state.
+   */
+  void setStateDuration(StatesEnum state, double duration);
 
   /**
    * @brief Accessor for the total duration of the state machine.

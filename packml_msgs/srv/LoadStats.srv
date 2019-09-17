@@ -1,0 +1,6 @@
+# Load packml state machine statistics, overriding current statistics
+
+# State machine statistics request
+Stats stats          # The current packml state machine statistics
+---
+# Empty response
