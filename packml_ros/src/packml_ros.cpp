@@ -33,6 +33,7 @@ PackmlRos::PackmlRos(ros::NodeHandle nh, ros::NodeHandle pn, std::shared_ptr<pac
 
   status_pub_ = packml_node.advertise<packml_msgs::Status>("status", 10, true);
   stats_pub_ = packml_node.advertise<packml_msgs::Stats>("stats", 10, true);
+  incremental_stats_pub_ = packml_node.advertise<packml_msgs::Stats>("stats_transaction", 10, true);
 
   trans_server_ = packml_node.advertiseService("transition", &PackmlRos::transRequest, this);
   reset_stats_server_ = packml_node.advertiseService("reset_stats", &PackmlRos::resetStats, this);
@@ -53,6 +54,21 @@ PackmlRos::PackmlRos(ros::NodeHandle nh, ros::NodeHandle pn, std::shared_ptr<pac
   else
   {
     stats_timer_ = nh_.createTimer(ros::Duration(stats_publish_period_), &PackmlRos::publishStatsCb, this);
+  }
+
+  if (!pn_.getParam("incremental_stats_publish_period", incremental_stats_publish_period_))
+  {
+    ROS_WARN_STREAM("Missing param: incremental_stats_publish_period. Defaulting to 15 minutes");
+    incremental_stats_publish_period_ = 900;
+  }
+  if(incremental_stats_publish_period_ <= 0)
+  {
+    ROS_WARN_STREAM("incremental_stats_publish_period <= 0. Incremental stats will not be published");
+  }
+  else
+  {
+    incremental_stats_timer_ = nh_.createTimer(ros::Duration(incremental_stats_publish_period_),
+            &PackmlRos::publishIncrementalStatsCb, this);
   }
 
   sm_->stateChangedEvent.bind_member_func(this, &PackmlRos::handleStateChanged);
@@ -306,6 +322,24 @@ void PackmlRos::publishStats()
   packml_msgs::Stats stats;
   getCurrentStats(stats);
   stats_pub_.publish(stats);
+}
+
+void PackmlRos::publishIncrementalStatsCb(const ros::TimerEvent &timer_event)
+{
+  // Check if incremental_stats_publish_period changed
+  float incremental_stats_publish_period_new;
+  if (pn_.getParam("incremental_stats_publish_period", incremental_stats_publish_period_new))
+  {
+    if (incremental_stats_publish_period_new != incremental_stats_publish_period_ && incremental_stats_publish_period_new > 0)
+    {
+      incremental_stats_timer_ = nh_.createTimer(ros::Duration(incremental_stats_publish_period_new),
+                                                 &PackmlRos::publishStatsCb, this);
+    }
+  }
+
+  packml_msgs::Stats stats;
+  getCurrentStats(stats);
+  incremental_stats_pub_.publish(stats);
 }
 
 bool PackmlRos::loadStats(packml_msgs::LoadStats::Request &req, packml_msgs::LoadStats::Response &response)

@@ -44,13 +44,16 @@ protected:
   std::shared_ptr<packml_sm::AbstractStateMachine> sm_;
   ros::Publisher status_pub_;
   ros::Publisher stats_pub_;
+  ros::Publisher incremental_stats_pub_;
   ros::ServiceServer trans_server_;
   ros::ServiceServer reset_stats_server_;
   ros::ServiceServer get_stats_server_;
   ros::ServiceServer load_stats_server_;
   packml_msgs::Status status_msg_;
   float stats_publish_period_;
+  float incremental_stats_publish_period_;
   ros::Timer stats_timer_;
+  ros::Timer incremental_stats_timer_;
 
   bool transRequest(packml_msgs::Transition::Request& req, packml_msgs::Transition::Response& res);
 
@@ -62,6 +65,7 @@ private:
   bool loadStats(packml_msgs::LoadStats::Request& req, packml_msgs::LoadStats::Response& response);
   packml_sm::PackmlStatsSnapshot populateStatsSnapshot(const packml_msgs::Stats& msg);
   void publishStatsCb(const ros::TimerEvent& timer_event);
+  void publishIncrementalStatsCb(const ros::TimerEvent& timer_event);
   void publishStats();
 };
 }  // namespace packml_ros
