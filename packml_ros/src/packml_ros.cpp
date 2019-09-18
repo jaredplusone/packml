@@ -200,10 +200,10 @@ void PackmlRos::getCurrentStats(packml_msgs::Stats& out_stats)
 }
 
 
-void PackmlRos::getStatsTransaction(packml_msgs::Stats &out_stats)
+void PackmlRos::getStatsTransaction(packml_msgs::Stats &out_stats, double duration)
 {
   packml_sm::PackmlStatsSnapshot stats_snapshot;
-  sm_->getCurrentStatSnapshot(stats_snapshot);
+  sm_->getCurrentStatTransaction(stats_snapshot, duration);
   out_stats = populateStatsMsg(stats_snapshot);
 }
 
@@ -335,7 +335,7 @@ void PackmlRos::publishStats()
   }
 
   packml_msgs::Stats stats;
-  getStatsTransaction(stats);
+  getCurrentStats(stats);
   stats_pub_.publish(stats);
 }
 
@@ -348,12 +348,12 @@ void PackmlRos::publishStatsTransactionCb(const ros::TimerEvent &timer_event)
     if (stats_transaction_publish_period_new != stats_transaction_publish_period_ && stats_transaction_publish_period_new > 0)
     {
       stats_transaction_timer_ = nh_.createTimer(ros::Duration(stats_transaction_publish_period_new),
-                                                 &PackmlRos::publishStatsCb, this);
+                                                 &PackmlRos::publishStatsTransactionCb, this);
     }
   }
 
   packml_msgs::Stats stats;
-  getCurrentStats(stats);
+  getStatsTransaction(stats, stats_transaction_publish_period_new);
   stats_transaction_pub_.publish(stats);
 }
 

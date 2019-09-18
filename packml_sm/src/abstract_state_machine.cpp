@@ -229,6 +229,64 @@ void AbstractStateMachine::getCurrentStatSnapshot(PackmlStatsSnapshot& snapshot_
   snapshot_out.itemized_quality_map = itemized_quality_map_;
 }
 
+void AbstractStateMachine::getCurrentStatTransaction(PackmlStatsSnapshot &snapshot_out, double duration)
+{
+  std::lock_guard<std::recursive_mutex> lock(stat_mutex_);
+  auto scheduled_time = calculateTotalTime();
+  float throughput = 0.0f;
+  if (scheduled_time > std::numeric_limits<double>::epsilon())
+  {
+    throughput = success_count_ / scheduled_time;
+  }
+
+  auto held_time = getHeldTime();
+  auto stopped_time = getStoppedTime();
+  auto suspend_time = getSuspendedTime();
+  auto aborted_time = getAbortedTime();
+
+  auto operating_time = scheduled_time;
+  operating_time -= stopped_time;
+  operating_time -= suspend_time;
+  operating_time -= aborted_time;
+
+  float availability = 0.0f;
+  if (scheduled_time > std::numeric_limits<double>::epsilon())
+  {
+    availability = operating_time / scheduled_time;
+  }
+
+  float performance = 0.0f;
+  if (operating_time > std::numeric_limits<double>::epsilon())
+  {
+    performance = static_cast<float>(success_count_) * ideal_cycle_time_ / operating_time;
+  }
+
+  float quality = 0.0f;
+  auto total_count = success_count_ + failure_count_;
+  if (total_count > 0)
+  {
+    quality = static_cast<float>(success_count_) / static_cast<float>(total_count);
+  }
+
+  snapshot_out.duration = scheduled_time;
+  snapshot_out.idle_duration = getIdleTime();
+  snapshot_out.exe_duration = getExecuteTime();
+  snapshot_out.held_duration = held_time;
+  snapshot_out.susp_duration = suspend_time;
+  snapshot_out.cmplt_duration = getCompleteTime();
+  snapshot_out.stop_duration = stopped_time;
+  snapshot_out.abort_duration = aborted_time;
+  snapshot_out.success_count = success_count_;
+  snapshot_out.fail_count = failure_count_;
+  snapshot_out.throughput = throughput;
+  snapshot_out.availability = availability;
+  snapshot_out.performance = performance;
+  snapshot_out.quality = quality;
+  snapshot_out.overall_equipment_effectiveness = quality * performance * availability;
+  snapshot_out.itemized_error_map = itemized_error_map_;
+  snapshot_out.itemized_quality_map = itemized_quality_map_;
+}
+
 double AbstractStateMachine::getIdleTime()
 {
   return getStateDuration(StatesEnum::IDLE);

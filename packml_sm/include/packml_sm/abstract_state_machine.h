@@ -397,6 +397,14 @@ public:
    */
   void getCurrentStatSnapshot(PackmlStatsSnapshot& snapshot_out);
 
+  /**
+   * @brief Fills the reference variable with the current stats transaction
+   *
+   * @param snapshot_out Reference to the variable to fill the transaction data with.
+   * @param period Amount of time for transaction
+   */
+  void getCurrentStatTransaction(PackmlStatsSnapshot& snapshot_out, double duration);
+
 protected:
   /**
    * @brief Call to invoke a state changed event.
