@@ -44,28 +44,30 @@ protected:
   std::shared_ptr<packml_sm::AbstractStateMachine> sm_;
   ros::Publisher status_pub_;
   ros::Publisher stats_pub_;
-  ros::Publisher incremental_stats_pub_;
+  ros::Publisher stats_transaction_pub_;
   ros::ServiceServer trans_server_;
   ros::ServiceServer reset_stats_server_;
   ros::ServiceServer get_stats_server_;
   ros::ServiceServer load_stats_server_;
   packml_msgs::Status status_msg_;
   float stats_publish_period_;
-  float incremental_stats_publish_period_;
+  float stats_transaction_publish_period_;
   ros::Timer stats_timer_;
-  ros::Timer incremental_stats_timer_;
+  ros::Timer stats_transaction_timer_;
 
   bool transRequest(packml_msgs::Transition::Request& req, packml_msgs::Transition::Response& res);
 
 private:
   void handleStateChanged(packml_sm::AbstractStateMachine& state_machine, const packml_sm::StateChangedEventArgs& args);
   void getCurrentStats(packml_msgs::Stats& out_stats);
+  void getStatsTransaction(packml_msgs::Stats& out_stats);
+  packml_msgs::Stats populateStatsMsg(const packml_sm::PackmlStatsSnapshot& stats_snapshot);
   bool getStats(packml_msgs::GetStats::Request& req, packml_msgs::GetStats::Response& response);
   bool resetStats(packml_msgs::ResetStats::Request& req, packml_msgs::ResetStats::Response& response);
   bool loadStats(packml_msgs::LoadStats::Request& req, packml_msgs::LoadStats::Response& response);
   packml_sm::PackmlStatsSnapshot populateStatsSnapshot(const packml_msgs::Stats& msg);
   void publishStatsCb(const ros::TimerEvent& timer_event);
-  void publishIncrementalStatsCb(const ros::TimerEvent& timer_event);
+  void publishStatsTransactionCb(const ros::TimerEvent &timer_event);
   void publishStats();
 };
 }  // namespace packml_ros
