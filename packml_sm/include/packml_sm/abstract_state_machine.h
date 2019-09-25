@@ -306,7 +306,7 @@ public:
   void resetStats();
 
   /**
-   * @brief Reset all of the tracked states.
+   * @brief Reset all of the tracked states for the current transaction.
    *
    */
   void resetTransactionStats();
@@ -423,7 +423,6 @@ public:
    * @brief Fills the reference variable with the current stats transaction
    *
    * @param snapshot_out Reference to the variable to fill the transaction data with.
-   * @param period Amount of time for transaction
    */
   void getCurrentStatTransaction(PackmlStatsSnapshot& snapshot_out);
 
@@ -506,7 +505,7 @@ private:
   std::map<StatesEnum, double> duration_map_; /** container for all of the durations referenced by their state id */
   std::map<StatesEnum, double> transaction_duration_map_; /** container for all of the durations referenced by their state id for the current transaction*/
   std::chrono::steady_clock::time_point start_time_; /** start time for the latest state entry */
-  std::chrono::steady_clock::time_point transaction_start_time_; /** start time for the latest state entry */
+  std::chrono::steady_clock::time_point transaction_start_time_; /** start time for the latest state entry for the current transaction*/
 
   /**
    * @brief adds or updates the specific itemized map
