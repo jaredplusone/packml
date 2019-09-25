@@ -174,120 +174,142 @@ public:
   /**
    * @brief Accessor for the duration spent in idle time.
    *
+   * @param is_transaction flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the idle state.
    */
-  double getIdleTime();
+  double getIdleTime(bool is_transaction);
 
   /**
    * @brief Accessor for the duration spent in starting.
    *
+   * @param is_transaction flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the starting state.
    */
-  double getStartingTime();
+  double getStartingTime(bool is_transaction);
 
   /**
    * @brief Accessor for the duration spent in resetting.
    *
+   * @param is_transaction flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the resetting state.
    */
-  double getResettingTime();
+  double getResettingTime(bool is_transaction);
 
   /**
    * @brief Accessor for the duration spent in execute.
    *
+   * @param is_transaction flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the execute state.
    */
-  double getExecuteTime();
+  double getExecuteTime(bool is_transaction);
 
   /**
    * @brief Accessor for the duration spent in held.
    *
+   * @param is_transaction flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the held state.
    */
-  double getHeldTime();
+  double getHeldTime(bool is_transaction);
 
   /**
    * @brief Accessor for the duration spent in holding.
    *
+   * @param is_transaction flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the holding state.
    */
-  double getHoldingTime();
+  double getHoldingTime(bool is_transaction);
 
   /**
    * @brief Accessor for the duration spent in unholding.
    *
+   * @param is_transaction flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the unholding state.
    */
-  double getUnholdingTime();
+  double getUnholdingTime(bool is_transaction);
 
   /**
    * @brief Accessor for the duration spent in suspended.
    *
+   * @param is_transaction flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the suspended state.
    */
-  double getSuspendedTime();
+  double getSuspendedTime(bool is_transaction);
 
   /**
    * @brief Accessor for the duration spent in suspending.
    *
+   * @param is_transaction flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the suspending state.
    */
-  double getSuspendingTime();
+  double getSuspendingTime(bool is_transaction);
 
   /**
    * @brief Accessor for the duration spent in unsuspending.
    *
+   * @param is_transaction flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the unsuspending state.
    */
-  double getUnsuspendingTime();
+  double getUnsuspendingTime(bool is_transaction);
 
   /**
    * @brief Accessor for the duration spent in complete.
    *
+   * @param is_transaction flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the complete state.
    */
-  double getCompleteTime();
+  double getCompleteTime(bool is_transaction);
 
   /**
    * @brief Accessor for the duration spent in stopped.
    *
+   * @param is_transaction flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the stopped state.
    */
-  double getStoppedTime();
+  double getStoppedTime(bool is_transaction);
 
   /**
    * @brief Accessor for the duration spent in clearing.
    *
+   * @param is_transaction flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the clearing state.
    */
-  double getClearingTime();
+  double getClearingTime(bool is_transaction);
 
   /**
    * @brief Accessor for the duration spent in stopping.
    *
+   * @param is_transaction flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the stopping state.
    */
-  double getStoppingTime();
+  double getStoppingTime(bool is_transaction);
 
   /**
    * @brief Accessor for the duration spent in aborted.
    *
+   * @param is_transaction flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the aborted state.
    */
-  double getAbortedTime();
+  double getAbortedTime(bool is_transaction);
 
   /**
    * @brief Accessor for the duration spent in aborting.
    *
+   * @param is_transaction flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the aborting state.
    */
-  double getAbortingTime();
+  double getAbortingTime(bool is_transaction);
 
   /**
    * @brief Reset all of the tracked states.
    *
    */
   void resetStats();
+
+  /**
+   * @brief Reset all of the tracked states.
+   *
+   */
+  void resetTransactionStats();
 
   /**
    * @brief Load all of the tracked states.
@@ -470,15 +492,21 @@ protected:
 
 private:
   std::map<int16_t, PackmlStatsItemized> itemized_error_map_;
+  std::map<int16_t, PackmlStatsItemized> transaction_itemized_error_map_;
   std::map<int16_t, PackmlStatsItemized> itemized_quality_map_;
-  int success_count_ = 0;        /** number of successful operations */
-  int failure_count_ = 0;        /** number of failed operations */
-  float ideal_cycle_time_ = 0.0; /** ideal cycle time in operations per second */
+  std::map<int16_t, PackmlStatsItemized> transaction_itemized_quality_map_;
+  int success_count_ = 0;              /** number of successful operations */
+  int success_count_transaction_ = 0;  /** number of successful operations */
+  int failure_count_ = 0;              /** number of failed operations */
+  int failure_count_transaction_ = 0;   /** number of failed operations */
+  float ideal_cycle_time_ = 0.0;       /** ideal cycle time in operations per second */
 
   std::recursive_mutex stat_mutex_;                  /** stat mutex for protecting stat operations */
   StatesEnum current_state_ = StatesEnum::UNDEFINED; /** cache of the current state */
   std::map<StatesEnum, double> duration_map_; /** container for all of the durations referenced by their state id */
+  std::map<StatesEnum, double> transaction_duration_map_; /** container for all of the durations referenced by their state id for the current transaction*/
   std::chrono::steady_clock::time_point start_time_; /** start time for the latest state entry */
+  std::chrono::steady_clock::time_point transaction_start_time_; /** start time for the latest state entry */
 
   /**
    * @brief adds or updates the specific itemized map
@@ -502,9 +530,10 @@ private:
    * @brief Accessor for the given state duration.
    *
    * @param state The state of interest.
+   * @param is_transaction flag to either calculate for a transaction or a running sum
    * @return double Returns the total time spent in the given state.
    */
-  double getStateDuration(StatesEnum state);
+  double getStateDuration(StatesEnum state, bool is_transaction);
 
   /**
    * @brief Setter for the given state duration.
@@ -517,8 +546,9 @@ private:
   /**
    * @brief Accessor for the total duration of the state machine.
    *
+   * @param is_transaction flag to either calculate for a transaction or a running sum
    * @return double Returns the total time spent in the state machine.
    */
-  double calculateTotalTime();
+  double calculateTotalTime(bool is_transaction);
 };
 }

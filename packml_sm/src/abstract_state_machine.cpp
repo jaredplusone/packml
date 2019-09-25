@@ -24,7 +24,8 @@
 
 namespace packml_sm
 {
-AbstractStateMachine::AbstractStateMachine() : start_time_(std::chrono::steady_clock::now())
+AbstractStateMachine::AbstractStateMachine() : start_time_(std::chrono::steady_clock::now()),
+transaction_start_time_(std::chrono::steady_clock::now())
 {
 }
 
@@ -174,17 +175,17 @@ bool AbstractStateMachine::abort()
 void AbstractStateMachine::getCurrentStatSnapshot(PackmlStatsSnapshot& snapshot_out)
 {
   std::lock_guard<std::recursive_mutex> lock(stat_mutex_);
-  auto scheduled_time = calculateTotalTime();
+  auto scheduled_time = calculateTotalTime(false);
   float throughput = 0.0f;
   if (scheduled_time > std::numeric_limits<double>::epsilon())
   {
     throughput = success_count_ / scheduled_time;
   }
 
-  auto held_time = getHeldTime();
-  auto stopped_time = getStoppedTime();
-  auto suspend_time = getSuspendedTime();
-  auto aborted_time = getAbortedTime();
+  auto held_time = getHeldTime(false);
+  auto stopped_time = getStoppedTime(false);
+  auto suspend_time = getSuspendedTime(false);
+  auto aborted_time = getAbortedTime(false);
 
   auto operating_time = scheduled_time;
   operating_time -= stopped_time;
@@ -211,11 +212,11 @@ void AbstractStateMachine::getCurrentStatSnapshot(PackmlStatsSnapshot& snapshot_
   }
 
   snapshot_out.duration = scheduled_time;
-  snapshot_out.idle_duration = getIdleTime();
-  snapshot_out.exe_duration = getExecuteTime();
+  snapshot_out.idle_duration = getIdleTime(false);
+  snapshot_out.exe_duration = getExecuteTime(false);
   snapshot_out.held_duration = held_time;
   snapshot_out.susp_duration = suspend_time;
-  snapshot_out.cmplt_duration = getCompleteTime();
+  snapshot_out.cmplt_duration = getCompleteTime(false);
   snapshot_out.stop_duration = stopped_time;
   snapshot_out.abort_duration = aborted_time;
   snapshot_out.success_count = success_count_;
@@ -232,17 +233,17 @@ void AbstractStateMachine::getCurrentStatSnapshot(PackmlStatsSnapshot& snapshot_
 void AbstractStateMachine::getCurrentStatTransaction(PackmlStatsSnapshot &snapshot_out, double duration)
 {
   std::lock_guard<std::recursive_mutex> lock(stat_mutex_);
-  auto scheduled_time = calculateTotalTime();
+  auto scheduled_time = calculateTotalTime(true);
   float throughput = 0.0f;
   if (scheduled_time > std::numeric_limits<double>::epsilon())
   {
-    throughput = success_count_ / scheduled_time;
+    throughput = success_count_transaction_ / scheduled_time;
   }
 
-  auto held_time = getHeldTime();
-  auto stopped_time = getStoppedTime();
-  auto suspend_time = getSuspendedTime();
-  auto aborted_time = getAbortedTime();
+  auto held_time = getHeldTime(true);
+  auto stopped_time = getStoppedTime(true);
+  auto suspend_time = getSuspendedTime(true);
+  auto aborted_time = getAbortedTime(true);
 
   auto operating_time = scheduled_time;
   operating_time -= stopped_time;
@@ -258,123 +259,125 @@ void AbstractStateMachine::getCurrentStatTransaction(PackmlStatsSnapshot &snapsh
   float performance = 0.0f;
   if (operating_time > std::numeric_limits<double>::epsilon())
   {
-    performance = static_cast<float>(success_count_) * ideal_cycle_time_ / operating_time;
+    performance = static_cast<float>(success_count_transaction_) * ideal_cycle_time_ / operating_time;
   }
 
   float quality = 0.0f;
-  auto total_count = success_count_ + failure_count_;
+  auto total_count = success_count_transaction_ + failure_count_transaction_;
   if (total_count > 0)
   {
-    quality = static_cast<float>(success_count_) / static_cast<float>(total_count);
+    quality = static_cast<float>(success_count_transaction_) / static_cast<float>(total_count);
   }
 
   snapshot_out.duration = scheduled_time;
-  snapshot_out.idle_duration = getIdleTime();
-  snapshot_out.exe_duration = getExecuteTime();
+  snapshot_out.idle_duration = getIdleTime(true);
+  snapshot_out.exe_duration = getExecuteTime(true);
   snapshot_out.held_duration = held_time;
   snapshot_out.susp_duration = suspend_time;
-  snapshot_out.cmplt_duration = getCompleteTime();
+  snapshot_out.cmplt_duration = getCompleteTime(true);
   snapshot_out.stop_duration = stopped_time;
   snapshot_out.abort_duration = aborted_time;
-  snapshot_out.success_count = success_count_;
-  snapshot_out.fail_count = failure_count_;
+  snapshot_out.success_count = success_count_transaction_;
+  snapshot_out.fail_count = failure_count_transaction_;
   snapshot_out.throughput = throughput;
   snapshot_out.availability = availability;
   snapshot_out.performance = performance;
   snapshot_out.quality = quality;
   snapshot_out.overall_equipment_effectiveness = quality * performance * availability;
-  snapshot_out.itemized_error_map = itemized_error_map_;
-  snapshot_out.itemized_quality_map = itemized_quality_map_;
+  snapshot_out.itemized_error_map = transaction_itemized_error_map_;
+  snapshot_out.itemized_quality_map = transaction_itemized_quality_map_;
+
+  resetTransactionStats();
 }
 
-double AbstractStateMachine::getIdleTime()
+double AbstractStateMachine::getIdleTime(bool is_transaction)
 {
-  return getStateDuration(StatesEnum::IDLE);
+  return getStateDuration(StatesEnum::IDLE, is_transaction);
 }
 
-double AbstractStateMachine::getStartingTime()
+double AbstractStateMachine::getStartingTime(bool is_transaction)
 {
-  return getStateDuration(StatesEnum::STARTING);
+  return getStateDuration(StatesEnum::STARTING, is_transaction);
 }
 
-double AbstractStateMachine::getResettingTime()
+double AbstractStateMachine::getResettingTime(bool is_transaction)
 {
-  return getStateDuration(StatesEnum::RESETTING);
+  return getStateDuration(StatesEnum::RESETTING, is_transaction);
 }
 
-double AbstractStateMachine::getExecuteTime()
+double AbstractStateMachine::getExecuteTime(bool is_transaction)
 {
-  return getStateDuration(StatesEnum::EXECUTE);
+  return getStateDuration(StatesEnum::EXECUTE, is_transaction);
 }
 
-double AbstractStateMachine::getHeldTime()
+double AbstractStateMachine::getHeldTime(bool is_transaction)
 {
-  return getStateDuration(StatesEnum::HELD);
+  return getStateDuration(StatesEnum::HELD, is_transaction);
 }
 
-double AbstractStateMachine::getHoldingTime()
+double AbstractStateMachine::getHoldingTime(bool is_transaction)
 {
-  return getStateDuration(StatesEnum::HOLDING);
+  return getStateDuration(StatesEnum::HOLDING, is_transaction);
 }
 
-double AbstractStateMachine::getUnholdingTime()
+double AbstractStateMachine::getUnholdingTime(bool is_transaction)
 {
-  return getStateDuration(StatesEnum::UNHOLDING);
+  return getStateDuration(StatesEnum::UNHOLDING, is_transaction);
 }
 
-double AbstractStateMachine::getSuspendedTime()
+double AbstractStateMachine::getSuspendedTime(bool is_transaction)
 {
-  return getStateDuration(StatesEnum::SUSPENDED);
+  return getStateDuration(StatesEnum::SUSPENDED, is_transaction);
 }
 
-double AbstractStateMachine::getSuspendingTime()
+double AbstractStateMachine::getSuspendingTime(bool is_transaction)
 {
-  return getStateDuration(StatesEnum::SUSPENDING);
+  return getStateDuration(StatesEnum::SUSPENDING, is_transaction);
 }
 
-double AbstractStateMachine::getUnsuspendingTime()
+double AbstractStateMachine::getUnsuspendingTime(bool is_transaction)
 {
-  return getStateDuration(StatesEnum::UNSUSPENDING);
+  return getStateDuration(StatesEnum::UNSUSPENDING, is_transaction);
 }
 
-double AbstractStateMachine::getCompleteTime()
+double AbstractStateMachine::getCompleteTime(bool is_transaction)
 {
-  return getStateDuration(StatesEnum::COMPLETE);
+  return getStateDuration(StatesEnum::COMPLETE, is_transaction);
 }
 
-double AbstractStateMachine::getStoppedTime()
+double AbstractStateMachine::getStoppedTime(bool is_transaction)
 {
-  return getStateDuration(StatesEnum::STOPPED);
+  return getStateDuration(StatesEnum::STOPPED, is_transaction);
 }
 
-double AbstractStateMachine::getClearingTime()
+double AbstractStateMachine::getClearingTime(bool is_transaction)
 {
-  return getStateDuration(StatesEnum::CLEARING);
+  return getStateDuration(StatesEnum::CLEARING, is_transaction);
 }
 
-double AbstractStateMachine::getStoppingTime()
+double AbstractStateMachine::getStoppingTime(bool is_transaction)
 {
-  return getStateDuration(StatesEnum::STOPPING);
+  return getStateDuration(StatesEnum::STOPPING, is_transaction);
 }
 
-double AbstractStateMachine::getAbortedTime()
+double AbstractStateMachine::getAbortedTime(bool is_transaction)
 {
-  return getStateDuration(StatesEnum::ABORTED);
+  return getStateDuration(StatesEnum::ABORTED, is_transaction);
 }
 
-double AbstractStateMachine::getAbortingTime()
+double AbstractStateMachine::getAbortingTime(bool is_transaction)
 {
-  return getStateDuration(StatesEnum::ABORTING);
+  return getStateDuration(StatesEnum::ABORTING, is_transaction);
 }
 
-double AbstractStateMachine::calculateTotalTime()
+double AbstractStateMachine::calculateTotalTime(bool is_transaction)
 {
   std::lock_guard<std::recursive_mutex> lock(stat_mutex_);
-  std::chrono::duration<double> duration = std::chrono::steady_clock::now() - start_time_;
+  std::chrono::duration<double> duration = std::chrono::steady_clock::now() - (is_transaction ? transaction_start_time_ : start_time_);
   auto elapsed_time = duration.count();
-  for (auto iter = duration_map_.begin(); iter != duration_map_.end(); iter++)
+  for (auto & iter : (is_transaction ? transaction_duration_map_ : duration_map_) )
   {
-    elapsed_time += iter->second;
+    elapsed_time += iter.second;
   }
 
   return elapsed_time;
@@ -395,6 +398,27 @@ void AbstractStateMachine::resetStats()
   }
 
   for (auto& itemized_it : itemized_quality_map_)
+  {
+    itemized_it.second.count = 0;
+    itemized_it.second.duration = 0;
+  }
+}
+
+void AbstractStateMachine::resetTransactionStats()
+{
+  std::lock_guard<std::recursive_mutex> lock(stat_mutex_);
+  transaction_start_time_ = std::chrono::steady_clock::now();
+  transaction_duration_map_.clear();
+  success_count_transaction_ = 0;
+  failure_count_transaction_ = 0;
+
+  for (auto& itemized_it : transaction_itemized_error_map_)
+  {
+    itemized_it.second.count = 0;
+    itemized_it.second.duration = 0;
+  }
+
+  for (auto& itemized_it : transaction_itemized_quality_map_)
   {
     itemized_it.second.count = 0;
     itemized_it.second.duration = 0;
@@ -442,24 +466,28 @@ void AbstractStateMachine::incrementErrorStatItem(int16_t id, int32_t count, dou
 {
   std::lock_guard<std::recursive_mutex> lock(stat_mutex_);
   incrementMapStatItem(itemized_error_map_, id, count, duration);
+  incrementMapStatItem(transaction_itemized_error_map_, id, count, duration);
 }
 
 void AbstractStateMachine::incrementQualityStatItem(int16_t id, int32_t count, double duration)
 {
   std::lock_guard<std::recursive_mutex> lock(stat_mutex_);
   incrementMapStatItem(itemized_quality_map_, id, count, duration);
+  incrementMapStatItem(transaction_itemized_quality_map_, id, count, duration);
 }
 
 void AbstractStateMachine::incrementSuccessCount()
 {
   std::lock_guard<std::recursive_mutex> lock(stat_mutex_);
   success_count_++;
+  success_count_transaction_++;
 }
 
 void AbstractStateMachine::incrementFailureCount()
 {
   std::lock_guard<std::recursive_mutex> lock(stat_mutex_);
   failure_count_++;
+  failure_count_transaction_++;
 }
 
 void AbstractStateMachine::setIdealCycleTime(float ideal_cycle_time)
@@ -483,26 +511,35 @@ void AbstractStateMachine::updateClock(StatesEnum new_state)
   {
     elapsed_time += duration_map_[current_state_];
   }
-
   duration_map_[current_state_] = elapsed_time;
+
+  std::chrono::duration<double> transaction_duration = std::chrono::steady_clock::now() - transaction_start_time_;
+  auto transaction_elapsed_time = transaction_duration.count();
+  if (transaction_duration_map_.find(current_state_) != transaction_duration_map_.end())
+  {
+    transaction_elapsed_time += transaction_duration_map_[current_state_];
+  }
+  transaction_duration_map_[current_state_] = transaction_elapsed_time;
 
   current_state_ = new_state;
   start_time_ = std::chrono::steady_clock::now();
+  transaction_start_time_ = std::chrono::steady_clock::now();
 }
 
-double AbstractStateMachine::getStateDuration(StatesEnum state)
+double AbstractStateMachine::getStateDuration(StatesEnum state, bool is_transaction)
 {
   std::lock_guard<std::recursive_mutex> lock(stat_mutex_);
   double elapsed_time = 0;
   if (state == current_state_)
   {
-    std::chrono::duration<double> duration = std::chrono::steady_clock::now() - start_time_;
+    std::chrono::duration<double> duration = std::chrono::steady_clock::now() - (is_transaction ? transaction_start_time_ : start_time_);
     elapsed_time += duration.count();
   }
 
-  if (duration_map_.find(state) != duration_map_.end())
+  auto map = is_transaction ? transaction_duration_map_ : duration_map_;
+  if (map.find(state) != map.end())
   {
-    elapsed_time += duration_map_[state];
+    elapsed_time += map[state];
   }
 
   return elapsed_time;
