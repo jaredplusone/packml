@@ -2,7 +2,7 @@
 <launch>
 
     <arg name="stats_publish_period" default="1.0" doc="Delay of stats messages publishing in seconds. 0 or less will not publish at all"/>
-    <arg name="stats_transaction_publish_period" default="1.0" doc="Delay of incremental stats messages calculating and publishing in seconds. 0 or less will not publish at all"/>
+    <arg name="stats_transaction_publish_period" default="900.0" doc="Delay of incremental stats messages calculating and publishing in seconds. 0 or less will not publish at all"/>
 
     <node name="packml_ros_node" pkg="packml_ros" type="packml_ros_node" output="screen">
         <param name="stats_publish_period" value="$(arg stats_publish_period)"/>

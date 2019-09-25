@@ -60,7 +60,7 @@ protected:
 private:
   void handleStateChanged(packml_sm::AbstractStateMachine& state_machine, const packml_sm::StateChangedEventArgs& args);
   void getCurrentStats(packml_msgs::Stats& out_stats);
-  void getStatsTransaction(packml_msgs::Stats& out_stats, double duration);
+  void getStatsTransaction(packml_msgs::Stats& out_stats);
   packml_msgs::Stats populateStatsMsg(const packml_sm::PackmlStatsSnapshot& stats_snapshot);
   bool getStats(packml_msgs::GetStats::Request& req, packml_msgs::GetStats::Response& response);
   bool resetStats(packml_msgs::ResetStats::Request& req, packml_msgs::ResetStats::Response& response);

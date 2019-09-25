@@ -425,7 +425,7 @@ public:
    * @param snapshot_out Reference to the variable to fill the transaction data with.
    * @param period Amount of time for transaction
    */
-  void getCurrentStatTransaction(PackmlStatsSnapshot& snapshot_out, double duration);
+  void getCurrentStatTransaction(PackmlStatsSnapshot& snapshot_out);
 
 protected:
   /**

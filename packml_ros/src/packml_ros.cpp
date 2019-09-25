@@ -200,10 +200,10 @@ void PackmlRos::getCurrentStats(packml_msgs::Stats& out_stats)
 }
 
 
-void PackmlRos::getStatsTransaction(packml_msgs::Stats &out_stats, double duration)
+void PackmlRos::getStatsTransaction(packml_msgs::Stats &out_stats)
 {
   packml_sm::PackmlStatsSnapshot stats_snapshot;
-  sm_->getCurrentStatTransaction(stats_snapshot, duration);
+  sm_->getCurrentStatTransaction(stats_snapshot);
   out_stats = populateStatsMsg(stats_snapshot);
 }
 
@@ -353,7 +353,7 @@ void PackmlRos::publishStatsTransactionCb(const ros::TimerEvent &timer_event)
   }
 
   packml_msgs::Stats stats;
-  getStatsTransaction(stats, stats_transaction_publish_period_new);
+  getStatsTransaction(stats);
   stats_transaction_pub_.publish(stats);
 }
 

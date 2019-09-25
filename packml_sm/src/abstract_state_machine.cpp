@@ -230,7 +230,7 @@ void AbstractStateMachine::getCurrentStatSnapshot(PackmlStatsSnapshot& snapshot_
   snapshot_out.itemized_quality_map = itemized_quality_map_;
 }
 
-void AbstractStateMachine::getCurrentStatTransaction(PackmlStatsSnapshot &snapshot_out, double duration)
+void AbstractStateMachine::getCurrentStatTransaction(PackmlStatsSnapshot &snapshot_out)
 {
   std::lock_guard<std::recursive_mutex> lock(stat_mutex_);
   auto scheduled_time = calculateTotalTime(true);
