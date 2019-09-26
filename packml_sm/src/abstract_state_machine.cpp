@@ -175,17 +175,17 @@ bool AbstractStateMachine::abort()
 void AbstractStateMachine::getCurrentStatSnapshot(PackmlStatsSnapshot& snapshot_out)
 {
   std::lock_guard<std::recursive_mutex> lock(stat_mutex_);
-  auto scheduled_time = calculateTotalTime(false);
+  auto scheduled_time = calculateTotalTime();
   float throughput = 0.0f;
   if (scheduled_time > std::numeric_limits<double>::epsilon())
   {
     throughput = success_count_ / scheduled_time;
   }
 
-  auto held_time = getHeldTime(false);
-  auto stopped_time = getStoppedTime(false);
-  auto suspend_time = getSuspendedTime(false);
-  auto aborted_time = getAbortedTime(false);
+  auto held_time = getHeldTime();
+  auto stopped_time = getStoppedTime();
+  auto suspend_time = getSuspendedTime();
+  auto aborted_time = getAbortedTime();
 
   auto operating_time = scheduled_time;
   operating_time -= stopped_time;
@@ -212,11 +212,11 @@ void AbstractStateMachine::getCurrentStatSnapshot(PackmlStatsSnapshot& snapshot_
   }
 
   snapshot_out.duration = scheduled_time;
-  snapshot_out.idle_duration = getIdleTime(false);
-  snapshot_out.exe_duration = getExecuteTime(false);
+  snapshot_out.idle_duration = getIdleTime();
+  snapshot_out.exe_duration = getExecuteTime();
   snapshot_out.held_duration = held_time;
   snapshot_out.susp_duration = suspend_time;
-  snapshot_out.cmplt_duration = getCompleteTime(false);
+  snapshot_out.cmplt_duration = getCompleteTime();
   snapshot_out.stop_duration = stopped_time;
   snapshot_out.abort_duration = aborted_time;
   snapshot_out.success_count = success_count_;

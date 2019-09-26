@@ -226,7 +226,6 @@ packml_msgs::Stats PackmlRos::populateStatsMsg(const packml_sm::PackmlStatsSnaps
   stats_msg.quality = stats_snapshot.quality;
   stats_msg.overall_equipment_effectiveness = stats_snapshot.overall_equipment_effectiveness;
 
-  stats_msg.error_items.clear();
   for (const auto& itemized_it : stats_snapshot.itemized_error_map)
   {
     packml_msgs::ItemizedStats stat;
@@ -236,7 +235,6 @@ packml_msgs::Stats PackmlRos::populateStatsMsg(const packml_sm::PackmlStatsSnaps
     stats_msg.error_items.push_back(stat);
   }
 
-  stats_msg.quality_items.clear();
   for (const auto& itemized_it : stats_snapshot.itemized_quality_map)
   {
     packml_msgs::ItemizedStats stat;
@@ -325,7 +323,7 @@ void PackmlRos::publishStatsCb(const ros::TimerEvent&)
 void PackmlRos::publishStats()
 {
   // Check if stats_publish_period changed
-  float stats_publish_period_new;
+  double stats_publish_period_new;
   if (pn_.getParam("stats_publish_period", stats_publish_period_new))
   {
     if (stats_publish_period_new != stats_publish_period_ && stats_publish_period_new > 0)
@@ -342,7 +340,7 @@ void PackmlRos::publishStats()
 void PackmlRos::publishStatsTransactionCb(const ros::TimerEvent &timer_event)
 {
   // Check if stats_transaction_publish_period changed
-  float stats_transaction_publish_period_new;
+  double stats_transaction_publish_period_new;
   if (pn_.getParam("stats_transaction_publish_period", stats_transaction_publish_period_new))
   {
     if (stats_transaction_publish_period_new != stats_transaction_publish_period_ && stats_transaction_publish_period_new > 0)

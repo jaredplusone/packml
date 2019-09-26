@@ -174,130 +174,130 @@ public:
   /**
    * @brief Accessor for the duration spent in idle time.
    *
-   * @param is_transaction flag to either calculate for a transaction or a running sum
+   * @param is_transaction=false flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the idle state.
    */
-  double getIdleTime(bool is_transaction);
+  double getIdleTime(bool is_transaction=false);
 
   /**
    * @brief Accessor for the duration spent in starting.
    *
-   * @param is_transaction flag to either calculate for a transaction or a running sum
+   * @param is_transaction=false flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the starting state.
    */
-  double getStartingTime(bool is_transaction);
+  double getStartingTime(bool is_transaction=false);
 
   /**
    * @brief Accessor for the duration spent in resetting.
    *
-   * @param is_transaction flag to either calculate for a transaction or a running sum
+   * @param is_transaction=false flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the resetting state.
    */
-  double getResettingTime(bool is_transaction);
+  double getResettingTime(bool is_transaction=false);
 
   /**
    * @brief Accessor for the duration spent in execute.
    *
-   * @param is_transaction flag to either calculate for a transaction or a running sum
+   * @param is_transaction=false flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the execute state.
    */
-  double getExecuteTime(bool is_transaction);
+  double getExecuteTime(bool is_transaction=false);
 
   /**
    * @brief Accessor for the duration spent in held.
    *
-   * @param is_transaction flag to either calculate for a transaction or a running sum
+   * @param is_transaction=false flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the held state.
    */
-  double getHeldTime(bool is_transaction);
+  double getHeldTime(bool is_transaction=false);
 
   /**
    * @brief Accessor for the duration spent in holding.
    *
-   * @param is_transaction flag to either calculate for a transaction or a running sum
+   * @param is_transaction=false flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the holding state.
    */
-  double getHoldingTime(bool is_transaction);
+  double getHoldingTime(bool is_transaction=false);
 
   /**
    * @brief Accessor for the duration spent in unholding.
    *
-   * @param is_transaction flag to either calculate for a transaction or a running sum
+   * @param is_transaction=false flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the unholding state.
    */
-  double getUnholdingTime(bool is_transaction);
+  double getUnholdingTime(bool is_transaction=false);
 
   /**
    * @brief Accessor for the duration spent in suspended.
    *
-   * @param is_transaction flag to either calculate for a transaction or a running sum
+   * @param is_transaction=false flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the suspended state.
    */
-  double getSuspendedTime(bool is_transaction);
+  double getSuspendedTime(bool is_transaction=false);
 
   /**
    * @brief Accessor for the duration spent in suspending.
    *
-   * @param is_transaction flag to either calculate for a transaction or a running sum
+   * @param is_transaction=false flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the suspending state.
    */
-  double getSuspendingTime(bool is_transaction);
+  double getSuspendingTime(bool is_transaction=false);
 
   /**
    * @brief Accessor for the duration spent in unsuspending.
    *
-   * @param is_transaction flag to either calculate for a transaction or a running sum
+   * @param is_transaction=false flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the unsuspending state.
    */
-  double getUnsuspendingTime(bool is_transaction);
+  double getUnsuspendingTime(bool is_transaction=false);
 
   /**
    * @brief Accessor for the duration spent in complete.
    *
-   * @param is_transaction flag to either calculate for a transaction or a running sum
+   * @param is_transaction=false flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the complete state.
    */
-  double getCompleteTime(bool is_transaction);
+  double getCompleteTime(bool is_transaction=false);
 
   /**
    * @brief Accessor for the duration spent in stopped.
    *
-   * @param is_transaction flag to either calculate for a transaction or a running sum
+   * @param is_transaction=false flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the stopped state.
    */
-  double getStoppedTime(bool is_transaction);
+  double getStoppedTime(bool is_transaction=false);
 
   /**
    * @brief Accessor for the duration spent in clearing.
    *
-   * @param is_transaction flag to either calculate for a transaction or a running sum
+   * @param is_transaction=false flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the clearing state.
    */
-  double getClearingTime(bool is_transaction);
+  double getClearingTime(bool is_transaction=false);
 
   /**
    * @brief Accessor for the duration spent in stopping.
    *
-   * @param is_transaction flag to either calculate for a transaction or a running sum
+   * @param is_transaction=false flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the stopping state.
    */
-  double getStoppingTime(bool is_transaction);
+  double getStoppingTime(bool is_transaction=false);
 
   /**
    * @brief Accessor for the duration spent in aborted.
    *
-   * @param is_transaction flag to either calculate for a transaction or a running sum
+   * @param is_transaction=false flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the aborted state.
    */
-  double getAbortedTime(bool is_transaction);
+  double getAbortedTime(bool is_transaction=false);
 
   /**
    * @brief Accessor for the duration spent in aborting.
    *
-   * @param is_transaction flag to either calculate for a transaction or a running sum
+   * @param is_transaction=false flag to either calculate for a transaction or a running sum
    * @return double Returns the time spent in the aborting state.
    */
-  double getAbortingTime(bool is_transaction);
+  double getAbortingTime(bool is_transaction=false);
 
   /**
    * @brief Reset all of the tracked states.
@@ -529,10 +529,10 @@ private:
    * @brief Accessor for the given state duration.
    *
    * @param state The state of interest.
-   * @param is_transaction flag to either calculate for a transaction or a running sum
+   * @param is_transaction=false flag to either calculate for a transaction or a running sum
    * @return double Returns the total time spent in the given state.
    */
-  double getStateDuration(StatesEnum state, bool is_transaction);
+  double getStateDuration(StatesEnum state, bool is_transaction=false);
 
   /**
    * @brief Setter for the given state duration.
@@ -545,9 +545,9 @@ private:
   /**
    * @brief Accessor for the total duration of the state machine.
    *
-   * @param is_transaction flag to either calculate for a transaction or a running sum
+   * @param is_transaction=false flag to either calculate for a transaction or a running sum
    * @return double Returns the total time spent in the state machine.
    */
-  double calculateTotalTime(bool is_transaction);
+  double calculateTotalTime(bool is_transaction=false);
 };
 }
