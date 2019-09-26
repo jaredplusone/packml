@@ -33,7 +33,7 @@ PackmlRos::PackmlRos(ros::NodeHandle nh, ros::NodeHandle pn, std::shared_ptr<pac
 
   status_pub_ = packml_node.advertise<packml_msgs::Status>("status", 10, true);
   stats_pub_ = packml_node.advertise<packml_msgs::Stats>("stats", 10, true);
-  stats_transaction_pub_ = packml_node.advertise<packml_msgs::Stats>("stats_transaction", 10, true);
+  incremental_stats_pub_ = packml_node.advertise<packml_msgs::Stats>("incremental_stats", 10, true);
 
   trans_server_ = packml_node.advertiseService("transition", &PackmlRos::transRequest, this);
   reset_stats_server_ = packml_node.advertiseService("reset_stats", &PackmlRos::resetStats, this);
@@ -42,33 +42,33 @@ PackmlRos::PackmlRos(ros::NodeHandle nh, ros::NodeHandle pn, std::shared_ptr<pac
 
   status_msg_ = packml_msgs::initStatus(pn.getNamespace());
 
-  if (!pn_.getParam("stats_publish_period", stats_publish_period_))
+  if (!pn_.getParam("stats_publish_rate", stats_publish_rate_))
   {
-    ROS_WARN_STREAM("Missing param: stats_publish_period. Defaulting to 1 second");
-    stats_publish_period_ = 1;
+    ROS_WARN_STREAM("Missing param: stats_publish_rate. Defaulting to 1 second");
+    stats_publish_rate_ = 1;
   }
-  if(stats_publish_period_ <= 0)
+  if(stats_publish_rate_ <= 0)
   {
-    ROS_WARN_STREAM("stats_publish_period <= 0. stats will not be published regularly");
+    ROS_WARN_STREAM("stats_publish_rate <= 0. stats will not be published regularly");
   }
   else
   {
-    stats_timer_ = nh_.createTimer(ros::Duration(stats_publish_period_), &PackmlRos::publishStatsCb, this);
+    stats_timer_ = nh_.createTimer(ros::Duration(stats_publish_rate_), &PackmlRos::publishStatsCb, this);
   }
 
-  if (!pn_.getParam("stats_transaction_publish_period", stats_transaction_publish_period_))
+  if (!pn_.getParam("incremental_stats_publish_rate", incremental_stats_publish_rate_))
   {
-    ROS_WARN_STREAM("Missing param: stats_transaction_publish_period. Defaulting to 15 minutes");
-    stats_transaction_publish_period_ = 900;
+    ROS_WARN_STREAM("Missing param: incremental_stats_publish_rate. Defaulting to 15 minutes");
+    incremental_stats_publish_rate_ = 900;
   }
-  if(stats_transaction_publish_period_ <= 0)
+  if(incremental_stats_publish_rate_ <= 0)
   {
-    ROS_WARN_STREAM("stats_transaction_publish_period <= 0. Stats transactions will not be published");
+    ROS_WARN_STREAM("incremental_stats_publish_rate <= 0. Incremental stats will not be published");
   }
   else
   {
-    stats_transaction_timer_ = nh_.createTimer(ros::Duration(stats_transaction_publish_period_),
-                                               &PackmlRos::publishStatsTransactionCb, this);
+    incremental_stats_timer_ = nh_.createTimer(ros::Duration(incremental_stats_publish_rate_),
+                                               &PackmlRos::publishIncrementalStatsCb, this);
   }
 
   sm_->stateChangedEvent.bind_member_func(this, &PackmlRos::handleStateChanged);
@@ -200,10 +200,10 @@ void PackmlRos::getCurrentStats(packml_msgs::Stats& out_stats)
 }
 
 
-void PackmlRos::getStatsTransaction(packml_msgs::Stats &out_stats)
+void PackmlRos::getIncrementalStats(packml_msgs::Stats &out_stats)
 {
   packml_sm::PackmlStatsSnapshot stats_snapshot;
-  sm_->getCurrentStatTransaction(stats_snapshot);
+  sm_->getCurrentIncrementalStatSnapshot(stats_snapshot);
   out_stats = populateStatsMsg(stats_snapshot);
 }
 
@@ -322,13 +322,13 @@ void PackmlRos::publishStatsCb(const ros::TimerEvent&)
 
 void PackmlRos::publishStats()
 {
-  // Check if stats_publish_period changed
-  double stats_publish_period_new;
-  if (pn_.getParam("stats_publish_period", stats_publish_period_new))
+  // Check if stats_publish_rate changed
+  double stats_publish_rate_new;
+  if (pn_.getParam("stats_publish_rate", stats_publish_rate_new))
   {
-    if (stats_publish_period_new != stats_publish_period_ && stats_publish_period_new > 0)
+    if (stats_publish_rate_new != stats_publish_rate_ && stats_publish_rate_new > 0)
     {
-      stats_timer_ = nh_.createTimer(ros::Duration(stats_publish_period_new), &PackmlRos::publishStatsCb, this);
+      stats_timer_ = nh_.createTimer(ros::Duration(stats_publish_rate_new), &PackmlRos::publishStatsCb, this);
     }
   }
 
@@ -337,22 +337,22 @@ void PackmlRos::publishStats()
   stats_pub_.publish(stats);
 }
 
-void PackmlRos::publishStatsTransactionCb(const ros::TimerEvent &timer_event)
+void PackmlRos::publishIncrementalStatsCb(const ros::TimerEvent &timer_event)
 {
-  // Check if stats_transaction_publish_period changed
-  double stats_transaction_publish_period_new;
-  if (pn_.getParam("stats_transaction_publish_period", stats_transaction_publish_period_new))
+  // Check if incremental_stats_publish_rate changed
+  double incremental_stats_publish_rate_new;
+  if (pn_.getParam("incremental_stats_publish_rate", incremental_stats_publish_rate_new))
   {
-    if (stats_transaction_publish_period_new != stats_transaction_publish_period_ && stats_transaction_publish_period_new > 0)
+    if (incremental_stats_publish_rate_new != incremental_stats_publish_rate_ && incremental_stats_publish_rate_new > 0)
     {
-      stats_transaction_timer_ = nh_.createTimer(ros::Duration(stats_transaction_publish_period_new),
-                                                 &PackmlRos::publishStatsTransactionCb, this);
+      incremental_stats_timer_ = nh_.createTimer(ros::Duration(incremental_stats_publish_rate_new),
+                                                 &PackmlRos::publishIncrementalStatsCb, this);
     }
   }
 
   packml_msgs::Stats stats;
-  getStatsTransaction(stats);
-  stats_transaction_pub_.publish(stats);
+  getIncrementalStats(stats);
+  incremental_stats_pub_.publish(stats);
 }
 
 bool PackmlRos::loadStats(packml_msgs::LoadStats::Request &req, packml_msgs::LoadStats::Response &response)

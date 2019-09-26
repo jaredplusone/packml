@@ -25,7 +25,7 @@
 namespace packml_sm
 {
 AbstractStateMachine::AbstractStateMachine() : start_time_(std::chrono::steady_clock::now()),
-transaction_start_time_(std::chrono::steady_clock::now())
+incremental_start_time_(std::chrono::steady_clock::now())
 {
 }
 
@@ -230,14 +230,14 @@ void AbstractStateMachine::getCurrentStatSnapshot(PackmlStatsSnapshot& snapshot_
   snapshot_out.itemized_quality_map = itemized_quality_map_;
 }
 
-void AbstractStateMachine::getCurrentStatTransaction(PackmlStatsSnapshot &snapshot_out)
+void AbstractStateMachine::getCurrentIncrementalStatSnapshot(PackmlStatsSnapshot &snapshot_out)
 {
   std::lock_guard<std::recursive_mutex> lock(stat_mutex_);
   auto scheduled_time = calculateTotalTime(true);
   float throughput = 0.0f;
   if (scheduled_time > std::numeric_limits<double>::epsilon())
   {
-    throughput = success_count_transaction_ / scheduled_time;
+    throughput = incremental_success_count_ / scheduled_time;
   }
 
   auto held_time = getHeldTime(true);
@@ -259,14 +259,14 @@ void AbstractStateMachine::getCurrentStatTransaction(PackmlStatsSnapshot &snapsh
   float performance = 0.0f;
   if (operating_time > std::numeric_limits<double>::epsilon())
   {
-    performance = static_cast<float>(success_count_transaction_) * ideal_cycle_time_ / operating_time;
+    performance = static_cast<float>(incremental_success_count_) * ideal_cycle_time_ / operating_time;
   }
 
   float quality = 0.0f;
-  auto total_count = success_count_transaction_ + failure_count_transaction_;
+  auto total_count = incremental_success_count_ + incremental_failure_count_;
   if (total_count > 0)
   {
-    quality = static_cast<float>(success_count_transaction_) / static_cast<float>(total_count);
+    quality = static_cast<float>(incremental_success_count_) / static_cast<float>(total_count);
   }
 
   snapshot_out.duration = scheduled_time;
@@ -277,105 +277,105 @@ void AbstractStateMachine::getCurrentStatTransaction(PackmlStatsSnapshot &snapsh
   snapshot_out.cmplt_duration = getCompleteTime(true);
   snapshot_out.stop_duration = stopped_time;
   snapshot_out.abort_duration = aborted_time;
-  snapshot_out.success_count = success_count_transaction_;
-  snapshot_out.fail_count = failure_count_transaction_;
+  snapshot_out.success_count = incremental_success_count_;
+  snapshot_out.fail_count = incremental_failure_count_;
   snapshot_out.throughput = throughput;
   snapshot_out.availability = availability;
   snapshot_out.performance = performance;
   snapshot_out.quality = quality;
   snapshot_out.overall_equipment_effectiveness = quality * performance * availability;
-  snapshot_out.itemized_error_map = transaction_itemized_error_map_;
-  snapshot_out.itemized_quality_map = transaction_itemized_quality_map_;
+  snapshot_out.itemized_error_map = incremental_itemized_error_map_;
+  snapshot_out.itemized_quality_map = inremental_itemized_quality_map_;
 
-  resetTransactionStats();
+  resetIncrementalStats();
 }
 
-double AbstractStateMachine::getIdleTime(bool is_transaction)
+double AbstractStateMachine::getIdleTime(bool is_incremental)
 {
-  return getStateDuration(StatesEnum::IDLE, is_transaction);
+  return getStateDuration(StatesEnum::IDLE, is_incremental);
 }
 
-double AbstractStateMachine::getStartingTime(bool is_transaction)
+double AbstractStateMachine::getStartingTime(bool is_incremental)
 {
-  return getStateDuration(StatesEnum::STARTING, is_transaction);
+  return getStateDuration(StatesEnum::STARTING, is_incremental);
 }
 
-double AbstractStateMachine::getResettingTime(bool is_transaction)
+double AbstractStateMachine::getResettingTime(bool is_incremental)
 {
-  return getStateDuration(StatesEnum::RESETTING, is_transaction);
+  return getStateDuration(StatesEnum::RESETTING, is_incremental);
 }
 
-double AbstractStateMachine::getExecuteTime(bool is_transaction)
+double AbstractStateMachine::getExecuteTime(bool is_incremental)
 {
-  return getStateDuration(StatesEnum::EXECUTE, is_transaction);
+  return getStateDuration(StatesEnum::EXECUTE, is_incremental);
 }
 
-double AbstractStateMachine::getHeldTime(bool is_transaction)
+double AbstractStateMachine::getHeldTime(bool is_incremental)
 {
-  return getStateDuration(StatesEnum::HELD, is_transaction);
+  return getStateDuration(StatesEnum::HELD, is_incremental);
 }
 
-double AbstractStateMachine::getHoldingTime(bool is_transaction)
+double AbstractStateMachine::getHoldingTime(bool is_incremental)
 {
-  return getStateDuration(StatesEnum::HOLDING, is_transaction);
+  return getStateDuration(StatesEnum::HOLDING, is_incremental);
 }
 
-double AbstractStateMachine::getUnholdingTime(bool is_transaction)
+double AbstractStateMachine::getUnholdingTime(bool is_incremental)
 {
-  return getStateDuration(StatesEnum::UNHOLDING, is_transaction);
+  return getStateDuration(StatesEnum::UNHOLDING, is_incremental);
 }
 
-double AbstractStateMachine::getSuspendedTime(bool is_transaction)
+double AbstractStateMachine::getSuspendedTime(bool is_incremental)
 {
-  return getStateDuration(StatesEnum::SUSPENDED, is_transaction);
+  return getStateDuration(StatesEnum::SUSPENDED, is_incremental);
 }
 
-double AbstractStateMachine::getSuspendingTime(bool is_transaction)
+double AbstractStateMachine::getSuspendingTime(bool is_incremental)
 {
-  return getStateDuration(StatesEnum::SUSPENDING, is_transaction);
+  return getStateDuration(StatesEnum::SUSPENDING, is_incremental);
 }
 
-double AbstractStateMachine::getUnsuspendingTime(bool is_transaction)
+double AbstractStateMachine::getUnsuspendingTime(bool is_incremental)
 {
-  return getStateDuration(StatesEnum::UNSUSPENDING, is_transaction);
+  return getStateDuration(StatesEnum::UNSUSPENDING, is_incremental);
 }
 
-double AbstractStateMachine::getCompleteTime(bool is_transaction)
+double AbstractStateMachine::getCompleteTime(bool is_incremental)
 {
-  return getStateDuration(StatesEnum::COMPLETE, is_transaction);
+  return getStateDuration(StatesEnum::COMPLETE, is_incremental);
 }
 
-double AbstractStateMachine::getStoppedTime(bool is_transaction)
+double AbstractStateMachine::getStoppedTime(bool is_incremental)
 {
-  return getStateDuration(StatesEnum::STOPPED, is_transaction);
+  return getStateDuration(StatesEnum::STOPPED, is_incremental);
 }
 
-double AbstractStateMachine::getClearingTime(bool is_transaction)
+double AbstractStateMachine::getClearingTime(bool is_incremental)
 {
-  return getStateDuration(StatesEnum::CLEARING, is_transaction);
+  return getStateDuration(StatesEnum::CLEARING, is_incremental);
 }
 
-double AbstractStateMachine::getStoppingTime(bool is_transaction)
+double AbstractStateMachine::getStoppingTime(bool is_incremental)
 {
-  return getStateDuration(StatesEnum::STOPPING, is_transaction);
+  return getStateDuration(StatesEnum::STOPPING, is_incremental);
 }
 
-double AbstractStateMachine::getAbortedTime(bool is_transaction)
+double AbstractStateMachine::getAbortedTime(bool is_incremental)
 {
-  return getStateDuration(StatesEnum::ABORTED, is_transaction);
+  return getStateDuration(StatesEnum::ABORTED, is_incremental);
 }
 
-double AbstractStateMachine::getAbortingTime(bool is_transaction)
+double AbstractStateMachine::getAbortingTime(bool is_incremental)
 {
-  return getStateDuration(StatesEnum::ABORTING, is_transaction);
+  return getStateDuration(StatesEnum::ABORTING, is_incremental);
 }
 
-double AbstractStateMachine::calculateTotalTime(bool is_transaction)
+double AbstractStateMachine::calculateTotalTime(bool is_incremental)
 {
   std::lock_guard<std::recursive_mutex> lock(stat_mutex_);
-  std::chrono::duration<double> duration = std::chrono::steady_clock::now() - (is_transaction ? transaction_start_time_ : start_time_);
+  std::chrono::duration<double> duration = std::chrono::steady_clock::now() - (is_incremental ? incremental_start_time_ : start_time_);
   auto elapsed_time = duration.count();
-  for (auto & iter : (is_transaction ? transaction_duration_map_ : duration_map_) )
+  for (auto & iter : (is_incremental ? incremental_duration_map_ : duration_map_) )
   {
     elapsed_time += iter.second;
   }
@@ -404,21 +404,21 @@ void AbstractStateMachine::resetStats()
   }
 }
 
-void AbstractStateMachine::resetTransactionStats()
+void AbstractStateMachine::resetIncrementalStats()
 {
   std::lock_guard<std::recursive_mutex> lock(stat_mutex_);
-  transaction_start_time_ = std::chrono::steady_clock::now();
-  transaction_duration_map_.clear();
-  success_count_transaction_ = 0;
-  failure_count_transaction_ = 0;
+  incremental_start_time_ = std::chrono::steady_clock::now();
+  incremental_duration_map_.clear();
+  incremental_success_count_ = 0;
+  incremental_failure_count_ = 0;
 
-  for (auto& itemized_it : transaction_itemized_error_map_)
+  for (auto& itemized_it : incremental_itemized_error_map_)
   {
     itemized_it.second.count = 0;
     itemized_it.second.duration = 0;
   }
 
-  for (auto& itemized_it : transaction_itemized_quality_map_)
+  for (auto& itemized_it : inremental_itemized_quality_map_)
   {
     itemized_it.second.count = 0;
     itemized_it.second.duration = 0;
@@ -466,28 +466,28 @@ void AbstractStateMachine::incrementErrorStatItem(int16_t id, int32_t count, dou
 {
   std::lock_guard<std::recursive_mutex> lock(stat_mutex_);
   incrementMapStatItem(itemized_error_map_, id, count, duration);
-  incrementMapStatItem(transaction_itemized_error_map_, id, count, duration);
+  incrementMapStatItem(incremental_itemized_error_map_, id, count, duration);
 }
 
 void AbstractStateMachine::incrementQualityStatItem(int16_t id, int32_t count, double duration)
 {
   std::lock_guard<std::recursive_mutex> lock(stat_mutex_);
   incrementMapStatItem(itemized_quality_map_, id, count, duration);
-  incrementMapStatItem(transaction_itemized_quality_map_, id, count, duration);
+  incrementMapStatItem(inremental_itemized_quality_map_, id, count, duration);
 }
 
 void AbstractStateMachine::incrementSuccessCount()
 {
   std::lock_guard<std::recursive_mutex> lock(stat_mutex_);
   success_count_++;
-  success_count_transaction_++;
+  incremental_success_count_++;
 }
 
 void AbstractStateMachine::incrementFailureCount()
 {
   std::lock_guard<std::recursive_mutex> lock(stat_mutex_);
   failure_count_++;
-  failure_count_transaction_++;
+  incremental_failure_count_++;
 }
 
 void AbstractStateMachine::setIdealCycleTime(float ideal_cycle_time)
@@ -513,30 +513,30 @@ void AbstractStateMachine::updateClock(StatesEnum new_state)
   }
   duration_map_[current_state_] = elapsed_time;
 
-  std::chrono::duration<double> transaction_duration = std::chrono::steady_clock::now() - transaction_start_time_;
-  auto transaction_elapsed_time = transaction_duration.count();
-  if (transaction_duration_map_.find(current_state_) != transaction_duration_map_.end())
+  std::chrono::duration<double> incremental_duration = std::chrono::steady_clock::now() - incremental_start_time_;
+  auto incremental_elapsed_time = incremental_duration.count();
+  if (incremental_duration_map_.find(current_state_) != incremental_duration_map_.end())
   {
-    transaction_elapsed_time += transaction_duration_map_[current_state_];
+    incremental_elapsed_time += incremental_duration_map_[current_state_];
   }
-  transaction_duration_map_[current_state_] = transaction_elapsed_time;
+  incremental_duration_map_[current_state_] = incremental_elapsed_time;
 
   current_state_ = new_state;
   start_time_ = std::chrono::steady_clock::now();
-  transaction_start_time_ = std::chrono::steady_clock::now();
+  incremental_start_time_ = std::chrono::steady_clock::now();
 }
 
-double AbstractStateMachine::getStateDuration(StatesEnum state, bool is_transaction)
+double AbstractStateMachine::getStateDuration(StatesEnum state, bool is_incremental)
 {
   std::lock_guard<std::recursive_mutex> lock(stat_mutex_);
   double elapsed_time = 0;
   if (state == current_state_)
   {
-    std::chrono::duration<double> duration = std::chrono::steady_clock::now() - (is_transaction ? transaction_start_time_ : start_time_);
+    std::chrono::duration<double> duration = std::chrono::steady_clock::now() - (is_incremental ? incremental_start_time_ : start_time_);
     elapsed_time += duration.count();
   }
 
-  auto map = is_transaction ? transaction_duration_map_ : duration_map_;
+  auto map = is_incremental ? incremental_duration_map_ : duration_map_;
   if (map.find(state) != map.end())
   {
     elapsed_time += map[state];

@@ -304,7 +304,7 @@ TEST(Packml_CC, getCurrentStatTransaction_empty)
   std::shared_ptr<AbstractStateMachine> sm = PackmlStateMachineContinuous::spawn();
 
   packml_sm::PackmlStatsSnapshot snapshot_out;
-  sm->getCurrentStatTransaction(snapshot_out);
+  sm->getCurrentIncrementalStatSnapshot(snapshot_out);
 
   ASSERT_LT(snapshot_out.duration, 1);
   ASSERT_EQ(snapshot_out.idle_duration, 0);
@@ -388,7 +388,7 @@ TEST(Packml_CC, getCurrentStatTransaction_durations)
   ASSERT_TRUE(waitForState(StatesEnum::ABORTED, queue));
   ros::Duration(2.0).sleep();
 
-  sm->getCurrentStatTransaction(snapshot_out);
+  sm->getCurrentIncrementalStatSnapshot(snapshot_out);
   ASSERT_NEAR(snapshot_out.duration, 16, 1);
   ASSERT_NEAR(snapshot_out.abort_duration, 4, 1);
   ASSERT_NEAR(snapshot_out.stop_duration, 4, 1);
@@ -399,7 +399,7 @@ TEST(Packml_CC, getCurrentStatTransaction_durations)
   ASSERT_NEAR(snapshot_out.held_duration, 0, 1);
 
   // Ensure durations reset after transaction
-  sm->getCurrentStatTransaction(snapshot_out);
+  sm->getCurrentIncrementalStatSnapshot(snapshot_out);
   ASSERT_NEAR(snapshot_out.duration, 0, 1);
   ASSERT_NEAR(snapshot_out.abort_duration, 0, 1);
   ASSERT_NEAR(snapshot_out.stop_duration, 0, 1);
@@ -411,7 +411,7 @@ TEST(Packml_CC, getCurrentStatTransaction_durations)
 
   // Next transaction
   ros::Duration(2.0).sleep();
-  sm->getCurrentStatTransaction(snapshot_out);
+  sm->getCurrentIncrementalStatSnapshot(snapshot_out);
   ASSERT_NEAR(snapshot_out.duration, 2, 1);
   ASSERT_NEAR(snapshot_out.abort_duration, 2, 1);
 
@@ -435,14 +435,14 @@ TEST(Packml_CC, getCurrentStatTransaction_counts)
     sm->incrementFailureCount();
   }
 
-  sm->getCurrentStatTransaction(snapshot_out);
+  sm->getCurrentIncrementalStatSnapshot(snapshot_out);
   ASSERT_EQ(snapshot_out.success_count, 90);
   ASSERT_EQ(snapshot_out.fail_count, 10);
   ASSERT_GT(snapshot_out.throughput, 90);
   ASSERT_NEAR(snapshot_out.quality, 0.9, 0.001);
 
   // Ensure counts reset after transaction
-  sm->getCurrentStatTransaction(snapshot_out);
+  sm->getCurrentIncrementalStatSnapshot(snapshot_out);
   ASSERT_EQ(snapshot_out.success_count, 0);
   ASSERT_EQ(snapshot_out.fail_count, 0);
   ASSERT_EQ(snapshot_out.throughput, 0);
@@ -453,7 +453,7 @@ TEST(Packml_CC, getCurrentStatTransaction_counts)
   {
     sm->incrementSuccessCount();
   }
-  sm->getCurrentStatTransaction(snapshot_out);
+  sm->getCurrentIncrementalStatSnapshot(snapshot_out);
   ASSERT_EQ(snapshot_out.success_count, 90);
   ASSERT_EQ(snapshot_out.fail_count, 0);
   ASSERT_GT(snapshot_out.throughput, 90);
@@ -471,7 +471,7 @@ TEST(Packml_CC, getCurrentStatTransaction_items)
   sm->incrementQualityStatItem(1, 5, 15);
   sm->incrementErrorStatItem(2, 7, 30);
 
-  sm->getCurrentStatTransaction(snapshot_out);
+  sm->getCurrentIncrementalStatSnapshot(snapshot_out);
   ASSERT_EQ(snapshot_out.itemized_quality_map.size(), 1);
   ASSERT_EQ(snapshot_out.itemized_quality_map.at(1).count, 5);
   ASSERT_EQ(snapshot_out.itemized_quality_map.at(1).duration, 15);
@@ -480,7 +480,7 @@ TEST(Packml_CC, getCurrentStatTransaction_items)
   ASSERT_EQ(snapshot_out.itemized_error_map.at(2).duration, 30);
 
   // Ensure map items' counts and durations reset after transaction
-  sm->getCurrentStatTransaction(snapshot_out);
+  sm->getCurrentIncrementalStatSnapshot(snapshot_out);
   ASSERT_EQ(snapshot_out.itemized_quality_map.size(), 1);
   ASSERT_EQ(snapshot_out.itemized_quality_map.at(1).count, 0);
   ASSERT_EQ(snapshot_out.itemized_quality_map.at(1).duration, 0);
@@ -490,7 +490,7 @@ TEST(Packml_CC, getCurrentStatTransaction_items)
 
   // Next transaction
   sm->incrementQualityStatItem(1, 88, 150);
-  sm->getCurrentStatTransaction(snapshot_out);
+  sm->getCurrentIncrementalStatSnapshot(snapshot_out);
   ASSERT_EQ(snapshot_out.itemized_quality_map.size(), 1);
   ASSERT_EQ(snapshot_out.itemized_quality_map.at(1).count, 88);
   ASSERT_EQ(snapshot_out.itemized_quality_map.at(1).duration, 150);

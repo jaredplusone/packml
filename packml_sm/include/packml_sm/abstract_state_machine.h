@@ -35,8 +35,7 @@ namespace packml_sm
 class AbstractStateMachine
 {
 public:
-  EventHandler<AbstractStateMachine, StateChangedEventArgs> stateChangedEvent; /** Triggered during a state changed
-                                                                                  event. */
+  EventHandler<AbstractStateMachine, StateChangedEventArgs> stateChangedEvent; /** Triggered during a state changed event. */
 
   /**
    * @brief Constructor for AbstractStateMachine.
@@ -174,142 +173,142 @@ public:
   /**
    * @brief Accessor for the duration spent in idle time.
    *
-   * @param is_transaction=false flag to either calculate for a transaction or a running sum
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the idle state.
    */
-  double getIdleTime(bool is_transaction=false);
+  double getIdleTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in starting.
    *
-   * @param is_transaction=false flag to either calculate for a transaction or a running sum
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the starting state.
    */
-  double getStartingTime(bool is_transaction=false);
+  double getStartingTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in resetting.
    *
-   * @param is_transaction=false flag to either calculate for a transaction or a running sum
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the resetting state.
    */
-  double getResettingTime(bool is_transaction=false);
+  double getResettingTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in execute.
    *
-   * @param is_transaction=false flag to either calculate for a transaction or a running sum
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the execute state.
    */
-  double getExecuteTime(bool is_transaction=false);
+  double getExecuteTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in held.
    *
-   * @param is_transaction=false flag to either calculate for a transaction or a running sum
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the held state.
    */
-  double getHeldTime(bool is_transaction=false);
+  double getHeldTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in holding.
    *
-   * @param is_transaction=false flag to either calculate for a transaction or a running sum
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the holding state.
    */
-  double getHoldingTime(bool is_transaction=false);
+  double getHoldingTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in unholding.
    *
-   * @param is_transaction=false flag to either calculate for a transaction or a running sum
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the unholding state.
    */
-  double getUnholdingTime(bool is_transaction=false);
+  double getUnholdingTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in suspended.
    *
-   * @param is_transaction=false flag to either calculate for a transaction or a running sum
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the suspended state.
    */
-  double getSuspendedTime(bool is_transaction=false);
+  double getSuspendedTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in suspending.
    *
-   * @param is_transaction=false flag to either calculate for a transaction or a running sum
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the suspending state.
    */
-  double getSuspendingTime(bool is_transaction=false);
+  double getSuspendingTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in unsuspending.
    *
-   * @param is_transaction=false flag to either calculate for a transaction or a running sum
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the unsuspending state.
    */
-  double getUnsuspendingTime(bool is_transaction=false);
+  double getUnsuspendingTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in complete.
    *
-   * @param is_transaction=false flag to either calculate for a transaction or a running sum
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the complete state.
    */
-  double getCompleteTime(bool is_transaction=false);
+  double getCompleteTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in stopped.
    *
-   * @param is_transaction=false flag to either calculate for a transaction or a running sum
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the stopped state.
    */
-  double getStoppedTime(bool is_transaction=false);
+  double getStoppedTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in clearing.
    *
-   * @param is_transaction=false flag to either calculate for a transaction or a running sum
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the clearing state.
    */
-  double getClearingTime(bool is_transaction=false);
+  double getClearingTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in stopping.
    *
-   * @param is_transaction=false flag to either calculate for a transaction or a running sum
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the stopping state.
    */
-  double getStoppingTime(bool is_transaction=false);
+  double getStoppingTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in aborted.
    *
-   * @param is_transaction=false flag to either calculate for a transaction or a running sum
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the aborted state.
    */
-  double getAbortedTime(bool is_transaction=false);
+  double getAbortedTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in aborting.
    *
-   * @param is_transaction=false flag to either calculate for a transaction or a running sum
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the aborting state.
    */
-  double getAbortingTime(bool is_transaction=false);
+  double getAbortingTime(bool is_incremental=false);
 
   /**
-   * @brief Reset all of the tracked states.
+   * @brief Reset all of the tracked stats.
    *
    */
   void resetStats();
 
   /**
-   * @brief Reset all of the tracked states for the current transaction.
+   * @brief Reset all of the tracked incremental stats.
    *
    */
-  void resetTransactionStats();
+  void resetIncrementalStats();
 
   /**
    * @brief Load all of the tracked states.
@@ -420,11 +419,11 @@ public:
   void getCurrentStatSnapshot(PackmlStatsSnapshot& snapshot_out);
 
   /**
-   * @brief Fills the reference variable with the current stats transaction
+   * @brief Fills the reference variable with the current incremental stats
    *
-   * @param snapshot_out Reference to the variable to fill the transaction data with.
+   * @param snapshot_out Reference to the variable to fill the incremental stats data with.
    */
-  void getCurrentStatTransaction(PackmlStatsSnapshot& snapshot_out);
+  void getCurrentIncrementalStatSnapshot(PackmlStatsSnapshot &snapshot_out);
 
 protected:
   /**
@@ -490,22 +489,21 @@ protected:
   virtual void _abort() = 0;
 
 private:
-  std::map<int16_t, PackmlStatsItemized> itemized_error_map_;
-  std::map<int16_t, PackmlStatsItemized> transaction_itemized_error_map_;
-  std::map<int16_t, PackmlStatsItemized> itemized_quality_map_;
-  std::map<int16_t, PackmlStatsItemized> transaction_itemized_quality_map_;
-  int success_count_ = 0;              /** number of successful operations */
-  int success_count_transaction_ = 0;  /** number of successful operations */
-  int failure_count_ = 0;              /** number of failed operations */
-  int failure_count_transaction_ = 0;   /** number of failed operations */
-  float ideal_cycle_time_ = 0.0;       /** ideal cycle time in operations per second */
-
-  std::recursive_mutex stat_mutex_;                  /** stat mutex for protecting stat operations */
-  StatesEnum current_state_ = StatesEnum::UNDEFINED; /** cache of the current state */
-  std::map<StatesEnum, double> duration_map_; /** container for all of the durations referenced by their state id */
-  std::map<StatesEnum, double> transaction_duration_map_; /** container for all of the durations referenced by their state id for the current transaction*/
-  std::chrono::steady_clock::time_point start_time_; /** start time for the latest state entry */
-  std::chrono::steady_clock::time_point transaction_start_time_; /** start time for the latest state entry for the current transaction*/
+  std::map<int16_t, PackmlStatsItemized> itemized_error_map_;              /** count and duration of error items */
+  std::map<int16_t, PackmlStatsItemized> incremental_itemized_error_map_;  /** count and duration of error items for incremental stats */
+  std::map<int16_t, PackmlStatsItemized> itemized_quality_map_;            /** count and duration of quality items */
+  std::map<int16_t, PackmlStatsItemized> inremental_itemized_quality_map_; /** count and duration of quality items for incremental stats */
+  int success_count_ = 0;                                                  /** number of successful operations */
+  int incremental_success_count_ = 0;                                      /** number of successful operations for incremental stats */
+  int failure_count_ = 0;                                                  /** number of failed operations */
+  int incremental_failure_count_ = 0;                                      /** number of failed operations for incremental stats */
+  float ideal_cycle_time_ = 0.0;                                           /** ideal cycle time in operations per second */
+  std::recursive_mutex stat_mutex_;                                        /** stat mutex for protecting stat operations */
+  StatesEnum current_state_ = StatesEnum::UNDEFINED;                       /** cache of the current state */
+  std::map<StatesEnum, double> duration_map_;                              /** container for all of the durations referenced by their state id */
+  std::map<StatesEnum, double> incremental_duration_map_;                  /** container for all of the durations referenced by their state id for incremental stats */
+  std::chrono::steady_clock::time_point start_time_;                       /** start time for the latest state entry */
+  std::chrono::steady_clock::time_point incremental_start_time_;           /** start time for the latest state entry for incremental stats */
 
   /**
    * @brief adds or updates the specific itemized map
@@ -529,10 +527,10 @@ private:
    * @brief Accessor for the given state duration.
    *
    * @param state The state of interest.
-   * @param is_transaction=false flag to either calculate for a transaction or a running sum
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the total time spent in the given state.
    */
-  double getStateDuration(StatesEnum state, bool is_transaction=false);
+  double getStateDuration(StatesEnum state, bool is_incremental=false);
 
   /**
    * @brief Setter for the given state duration.
@@ -545,9 +543,9 @@ private:
   /**
    * @brief Accessor for the total duration of the state machine.
    *
-   * @param is_transaction=false flag to either calculate for a transaction or a running sum
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the total time spent in the state machine.
    */
-  double calculateTotalTime(bool is_transaction=false);
+  double calculateTotalTime(bool is_incremental=false);
 };
 }
