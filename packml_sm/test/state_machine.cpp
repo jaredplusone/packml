@@ -298,4 +298,204 @@ TEST(Packml_CC, load_stats)
   ROS_INFO_STREAM("load stats test complete");
 }
 
+TEST(Packml_CC, getCurrentStatTransaction_empty)
+{
+  ROS_INFO_STREAM("CONTINUOUS CYCLE::stats transaction empty");
+  std::shared_ptr<AbstractStateMachine> sm = PackmlStateMachineContinuous::spawn();
+
+  packml_sm::PackmlStatsSnapshot snapshot_out;
+  sm->getCurrentIncrementalStatSnapshot(snapshot_out);
+
+  ASSERT_LT(snapshot_out.duration, 1);
+  ASSERT_EQ(snapshot_out.idle_duration, 0);
+  ASSERT_EQ(snapshot_out.exe_duration, 0);
+  ASSERT_EQ(snapshot_out.held_duration, 0);
+  ASSERT_EQ(snapshot_out.susp_duration, 0);
+  ASSERT_EQ(snapshot_out.cmplt_duration, 0);
+  ASSERT_EQ(snapshot_out.stop_duration, 0);
+  ASSERT_EQ(snapshot_out.abort_duration, 0);
+
+  ASSERT_EQ(snapshot_out.success_count, 0);
+  ASSERT_EQ(snapshot_out.fail_count, 0);
+  ASSERT_EQ(snapshot_out.cycle_count, 0);
+  ASSERT_EQ(snapshot_out.throughput, 0);
+
+  ASSERT_EQ(snapshot_out.availability, 1);
+  ASSERT_EQ(snapshot_out.performance, 0);
+  ASSERT_EQ(snapshot_out.quality, 0);
+  ASSERT_EQ(snapshot_out.overall_equipment_effectiveness, 0);
+
+  ASSERT_EQ(snapshot_out.itemized_error_map.size(), 0);
+  ASSERT_EQ(snapshot_out.itemized_quality_map.size(), 0);
+
+  ROS_INFO_STREAM("stats transaction empty complete");
+}
+
+TEST(Packml_CC, getCurrentStatTransaction_durations)
+{
+  ROS_INFO_STREAM("CONTINUOUS CYCLE::stats transaction durations");
+  std::shared_ptr<AbstractStateMachine> sm = PackmlStateMachineContinuous::spawn();
+  StateMachineVisitedStatesQueue queue(sm);
+  packml_sm::PackmlStatsSnapshot snapshot_out;
+
+  sm->setExecute(std::bind(success));
+  sm->activate();
+  while (!sm->isActive()) { }
+
+  ASSERT_TRUE(waitForState(StatesEnum::ABORTED, queue));
+  ros::Duration(2.0).sleep();
+
+  ASSERT_TRUE(sm->clear());
+  ASSERT_TRUE(waitForState(StatesEnum::CLEARING, queue));
+  ASSERT_TRUE(waitForState(StatesEnum::STOPPED, queue));
+  ros::Duration(2.0).sleep();
+
+  ASSERT_TRUE(sm->reset());
+  ASSERT_TRUE(waitForState(StatesEnum::RESETTING, queue));
+  ASSERT_TRUE(waitForState(StatesEnum::IDLE, queue));
+  ros::Duration(2.0).sleep();
+
+  ASSERT_TRUE(sm->start());
+  ASSERT_TRUE(waitForState(StatesEnum::STARTING, queue));
+  ASSERT_TRUE(waitForState(StatesEnum::EXECUTE, queue));
+  ASSERT_FALSE(waitForState(StatesEnum::COMPLETING, queue));
+  ASSERT_FALSE(waitForState(StatesEnum::COMPLETE, queue));
+
+  ASSERT_TRUE(sm->hold());
+  ASSERT_TRUE(waitForState(StatesEnum::HOLDING, queue));
+  ASSERT_TRUE(waitForState(StatesEnum::HELD, queue));
+
+  ASSERT_TRUE(sm->unhold());
+  ASSERT_TRUE(waitForState(StatesEnum::UNHOLDING, queue));
+  ASSERT_TRUE(waitForState(StatesEnum::EXECUTE, queue));
+
+  ASSERT_TRUE(sm->suspend());
+  ASSERT_TRUE(waitForState(StatesEnum::SUSPENDING, queue));
+  ASSERT_TRUE(waitForState(StatesEnum::SUSPENDED, queue));
+  ros::Duration(2.0).sleep();
+
+  ASSERT_TRUE(sm->unsuspend());
+  ASSERT_TRUE(waitForState(StatesEnum::UNSUSPENDING, queue));
+  ASSERT_TRUE(waitForState(StatesEnum::EXECUTE, queue));
+
+  ASSERT_TRUE(sm->stop());
+  ASSERT_TRUE(waitForState(StatesEnum::STOPPING, queue));
+  ASSERT_TRUE(waitForState(StatesEnum::STOPPED, queue));
+  ros::Duration(2.0).sleep();
+
+  ASSERT_TRUE(sm->abort());
+  ASSERT_TRUE(waitForState(StatesEnum::ABORTING, queue));
+  ASSERT_TRUE(waitForState(StatesEnum::ABORTED, queue));
+  ros::Duration(2.0).sleep();
+
+  sm->getCurrentIncrementalStatSnapshot(snapshot_out);
+  ASSERT_NEAR(snapshot_out.duration, 16, 1);
+  ASSERT_NEAR(snapshot_out.abort_duration, 4, 1);
+  ASSERT_NEAR(snapshot_out.stop_duration, 4, 1);
+  ASSERT_NEAR(snapshot_out.idle_duration, 2, 1);
+  ASSERT_NEAR(snapshot_out.exe_duration, 4, 1);
+  ASSERT_NEAR(snapshot_out.cmplt_duration, 0, 1);
+  ASSERT_NEAR(snapshot_out.susp_duration, 2, 1);
+  ASSERT_NEAR(snapshot_out.held_duration, 0, 1);
+
+  // Ensure durations reset after transaction
+  sm->getCurrentIncrementalStatSnapshot(snapshot_out);
+  ASSERT_NEAR(snapshot_out.duration, 0, 1);
+  ASSERT_NEAR(snapshot_out.abort_duration, 0, 1);
+  ASSERT_NEAR(snapshot_out.stop_duration, 0, 1);
+  ASSERT_NEAR(snapshot_out.idle_duration, 0, 1);
+  ASSERT_NEAR(snapshot_out.exe_duration, 0, 1);
+  ASSERT_NEAR(snapshot_out.cmplt_duration, 0, 1);
+  ASSERT_NEAR(snapshot_out.susp_duration, 0, 1);
+  ASSERT_NEAR(snapshot_out.held_duration, 0, 1);
+
+  // Next transaction
+  ros::Duration(2.0).sleep();
+  sm->getCurrentIncrementalStatSnapshot(snapshot_out);
+  ASSERT_NEAR(snapshot_out.duration, 2, 1);
+  ASSERT_NEAR(snapshot_out.abort_duration, 2, 1);
+
+  ROS_INFO_STREAM("stats transaction durations complete");
+}
+
+TEST(Packml_CC, getCurrentStatTransaction_counts)
+{
+  ROS_INFO_STREAM("CONTINUOUS CYCLE::stats transaction counts");
+  std::shared_ptr<AbstractStateMachine> sm = PackmlStateMachineContinuous::spawn();
+  packml_sm::PackmlStatsSnapshot snapshot_out;
+
+  auto num_successes = 90;
+  auto num_failures = 10;
+  for (auto i = 0; i < num_successes; ++i)
+  {
+    sm->incrementSuccessCount();
+  }
+  for (auto i = 0; i < num_failures; ++i)
+  {
+    sm->incrementFailureCount();
+  }
+
+  sm->getCurrentIncrementalStatSnapshot(snapshot_out);
+  ASSERT_EQ(snapshot_out.success_count, 90);
+  ASSERT_EQ(snapshot_out.fail_count, 10);
+  ASSERT_GT(snapshot_out.throughput, 90);
+  ASSERT_NEAR(snapshot_out.quality, 0.9, 0.001);
+
+  // Ensure counts reset after transaction
+  sm->getCurrentIncrementalStatSnapshot(snapshot_out);
+  ASSERT_EQ(snapshot_out.success_count, 0);
+  ASSERT_EQ(snapshot_out.fail_count, 0);
+  ASSERT_EQ(snapshot_out.throughput, 0);
+  ASSERT_EQ(snapshot_out.quality, 0);
+
+  // Next transaction
+  for (auto i = 0; i < num_successes; ++i)
+  {
+    sm->incrementSuccessCount();
+  }
+  sm->getCurrentIncrementalStatSnapshot(snapshot_out);
+  ASSERT_EQ(snapshot_out.success_count, 90);
+  ASSERT_EQ(snapshot_out.fail_count, 0);
+  ASSERT_GT(snapshot_out.throughput, 90);
+  ASSERT_NEAR(snapshot_out.quality, 1.0, 0.001);
+
+  ROS_INFO_STREAM("stats transaction durations counts");
+}
+
+TEST(Packml_CC, getCurrentStatTransaction_items)
+{
+  ROS_INFO_STREAM("CONTINUOUS CYCLE::stats transaction items");
+  std::shared_ptr<AbstractStateMachine> sm = PackmlStateMachineContinuous::spawn();
+  packml_sm::PackmlStatsSnapshot snapshot_out;
+
+  sm->incrementQualityStatItem(1, 5, 15);
+  sm->incrementErrorStatItem(2, 7, 30);
+
+  sm->getCurrentIncrementalStatSnapshot(snapshot_out);
+  ASSERT_EQ(snapshot_out.itemized_quality_map.size(), 1);
+  ASSERT_EQ(snapshot_out.itemized_quality_map.at(1).count, 5);
+  ASSERT_EQ(snapshot_out.itemized_quality_map.at(1).duration, 15);
+  ASSERT_EQ(snapshot_out.itemized_error_map.size(), 1);
+  ASSERT_EQ(snapshot_out.itemized_error_map.at(2).count, 7);
+  ASSERT_EQ(snapshot_out.itemized_error_map.at(2).duration, 30);
+
+  // Ensure map items' counts and durations reset after transaction
+  sm->getCurrentIncrementalStatSnapshot(snapshot_out);
+  ASSERT_EQ(snapshot_out.itemized_quality_map.size(), 1);
+  ASSERT_EQ(snapshot_out.itemized_quality_map.at(1).count, 0);
+  ASSERT_EQ(snapshot_out.itemized_quality_map.at(1).duration, 0);
+  ASSERT_EQ(snapshot_out.itemized_error_map.size(), 1);
+  ASSERT_EQ(snapshot_out.itemized_error_map.at(2).count, 0);
+  ASSERT_EQ(snapshot_out.itemized_error_map.at(2).duration, 0);
+
+  // Next transaction
+  sm->incrementQualityStatItem(1, 88, 150);
+  sm->getCurrentIncrementalStatSnapshot(snapshot_out);
+  ASSERT_EQ(snapshot_out.itemized_quality_map.size(), 1);
+  ASSERT_EQ(snapshot_out.itemized_quality_map.at(1).count, 88);
+  ASSERT_EQ(snapshot_out.itemized_quality_map.at(1).duration, 150);
+
+  ROS_INFO_STREAM("stats transaction durations items");
+}
+
 }

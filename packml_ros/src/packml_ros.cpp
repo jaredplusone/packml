@@ -33,6 +33,7 @@ PackmlRos::PackmlRos(ros::NodeHandle nh, ros::NodeHandle pn, std::shared_ptr<pac
 
   status_pub_ = packml_node.advertise<packml_msgs::Status>("status", 10, true);
   stats_pub_ = packml_node.advertise<packml_msgs::Stats>("stats", 10, true);
+  incremental_stats_pub_ = packml_node.advertise<packml_msgs::Stats>("incremental_stats", 10, true);
 
   trans_server_ = packml_node.advertiseService("transition", &PackmlRos::transRequest, this);
   reset_stats_server_ = packml_node.advertiseService("reset_stats", &PackmlRos::resetStats, this);
@@ -41,18 +42,33 @@ PackmlRos::PackmlRos(ros::NodeHandle nh, ros::NodeHandle pn, std::shared_ptr<pac
 
   status_msg_ = packml_msgs::initStatus(pn.getNamespace());
 
-  if (!pn_.getParam("stats_publish_period", stats_publish_period_))
+  if (!pn_.getParam("stats_publish_rate", stats_publish_rate_))
   {
-    ROS_WARN_STREAM("Missing param: stats_publish_period. Defaulting to 1 second");
-    stats_publish_period_ = 1;
+    ROS_WARN_STREAM("Missing param: stats_publish_rate. Defaulting to 1 second");
+    stats_publish_rate_ = 1;
   }
-  if(stats_publish_period_ <= 0)
+  if(stats_publish_rate_ <= 0)
   {
-    ROS_WARN_STREAM("stats_publish_period <= 0. stats will not be published regularly");
+    ROS_WARN_STREAM("stats_publish_rate <= 0. stats will not be published regularly");
   }
   else
   {
-    stats_timer_ = nh_.createTimer(ros::Duration(stats_publish_period_), &PackmlRos::publishStatsCb, this);
+    stats_timer_ = nh_.createTimer(ros::Duration(stats_publish_rate_), &PackmlRos::publishStatsCb, this);
+  }
+
+  if (!pn_.getParam("incremental_stats_publish_rate", incremental_stats_publish_rate_))
+  {
+    ROS_WARN_STREAM("Missing param: incremental_stats_publish_rate. Defaulting to 15 minutes");
+    incremental_stats_publish_rate_ = 900;
+  }
+  if(incremental_stats_publish_rate_ <= 0)
+  {
+    ROS_WARN_STREAM("incremental_stats_publish_rate <= 0. Incremental stats will not be published");
+  }
+  else
+  {
+    incremental_stats_timer_ = nh_.createTimer(ros::Duration(incremental_stats_publish_rate_),
+                                               &PackmlRos::publishIncrementalStatsCb, this);
   }
 
   sm_->stateChangedEvent.bind_member_func(this, &PackmlRos::handleStateChanged);
@@ -180,43 +196,56 @@ void PackmlRos::getCurrentStats(packml_msgs::Stats& out_stats)
 {
   packml_sm::PackmlStatsSnapshot stats_snapshot;
   sm_->getCurrentStatSnapshot(stats_snapshot);
+  out_stats = populateStatsMsg(stats_snapshot);
+}
 
-  out_stats.idle_duration.data.fromSec(stats_snapshot.idle_duration);
-  out_stats.exe_duration.data.fromSec(stats_snapshot.exe_duration);
-  out_stats.held_duration.data.fromSec(stats_snapshot.held_duration);
-  out_stats.susp_duration.data.fromSec(stats_snapshot.susp_duration);
-  out_stats.cmplt_duration.data.fromSec(stats_snapshot.cmplt_duration);
-  out_stats.stop_duration.data.fromSec(stats_snapshot.stop_duration);
-  out_stats.abort_duration.data.fromSec(stats_snapshot.abort_duration);
-  out_stats.duration.data.fromSec(stats_snapshot.duration);
-  out_stats.fail_count = stats_snapshot.fail_count;
-  out_stats.success_count = stats_snapshot.success_count;
-  out_stats.availability = stats_snapshot.availability;
-  out_stats.performance = stats_snapshot.performance;
-  out_stats.quality = stats_snapshot.quality;
-  out_stats.overall_equipment_effectiveness = stats_snapshot.overall_equipment_effectiveness;
 
-  out_stats.error_items.clear();
+void PackmlRos::getIncrementalStats(packml_msgs::Stats &out_stats)
+{
+  packml_sm::PackmlStatsSnapshot stats_snapshot;
+  sm_->getCurrentIncrementalStatSnapshot(stats_snapshot);
+  out_stats = populateStatsMsg(stats_snapshot);
+}
+
+packml_msgs::Stats PackmlRos::populateStatsMsg(const packml_sm::PackmlStatsSnapshot& stats_snapshot)
+{
+  packml_msgs::Stats stats_msg;
+
+  stats_msg.idle_duration.data.fromSec(stats_snapshot.idle_duration);
+  stats_msg.exe_duration.data.fromSec(stats_snapshot.exe_duration);
+  stats_msg.held_duration.data.fromSec(stats_snapshot.held_duration);
+  stats_msg.susp_duration.data.fromSec(stats_snapshot.susp_duration);
+  stats_msg.cmplt_duration.data.fromSec(stats_snapshot.cmplt_duration);
+  stats_msg.stop_duration.data.fromSec(stats_snapshot.stop_duration);
+  stats_msg.abort_duration.data.fromSec(stats_snapshot.abort_duration);
+  stats_msg.duration.data.fromSec(stats_snapshot.duration);
+  stats_msg.fail_count = stats_snapshot.fail_count;
+  stats_msg.success_count = stats_snapshot.success_count;
+  stats_msg.availability = stats_snapshot.availability;
+  stats_msg.performance = stats_snapshot.performance;
+  stats_msg.quality = stats_snapshot.quality;
+  stats_msg.overall_equipment_effectiveness = stats_snapshot.overall_equipment_effectiveness;
+
   for (const auto& itemized_it : stats_snapshot.itemized_error_map)
   {
     packml_msgs::ItemizedStats stat;
     stat.id = itemized_it.second.id;
     stat.count = itemized_it.second.count;
     stat.duration.data.fromSec(itemized_it.second.duration);
-    out_stats.error_items.push_back(stat);
+    stats_msg.error_items.push_back(stat);
   }
 
-  out_stats.quality_items.clear();
   for (const auto& itemized_it : stats_snapshot.itemized_quality_map)
   {
     packml_msgs::ItemizedStats stat;
     stat.id = itemized_it.second.id;
     stat.count = itemized_it.second.count;
     stat.duration.data.fromSec(itemized_it.second.duration);
-    out_stats.quality_items.push_back(stat);
+    stats_msg.quality_items.push_back(stat);
   }
 
-  out_stats.header.stamp = ros::Time::now();
+  stats_msg.header.stamp = ros::Time::now();
+  return stats_msg;
 }
 
 packml_sm::PackmlStatsSnapshot PackmlRos::populateStatsSnapshot(const packml_msgs::Stats &msg)
@@ -293,19 +322,37 @@ void PackmlRos::publishStatsCb(const ros::TimerEvent&)
 
 void PackmlRos::publishStats()
 {
-  // Check if stats_publish_period changed
-  float stats_publish_period_new;
-  if (pn_.getParam("stats_publish_period", stats_publish_period_new))
+  // Check if stats_publish_rate changed
+  double stats_publish_rate_new;
+  if (pn_.getParam("stats_publish_rate", stats_publish_rate_new))
   {
-    if (stats_publish_period_new != stats_publish_period_ && stats_publish_period_new > 0)
+    if (stats_publish_rate_new != stats_publish_rate_ && stats_publish_rate_new > 0)
     {
-      stats_timer_ = nh_.createTimer(ros::Duration(stats_publish_period_new), &PackmlRos::publishStatsCb, this);
+      stats_timer_ = nh_.createTimer(ros::Duration(stats_publish_rate_new), &PackmlRos::publishStatsCb, this);
     }
   }
 
   packml_msgs::Stats stats;
   getCurrentStats(stats);
   stats_pub_.publish(stats);
+}
+
+void PackmlRos::publishIncrementalStatsCb(const ros::TimerEvent &timer_event)
+{
+  // Check if incremental_stats_publish_rate changed
+  double incremental_stats_publish_rate_new;
+  if (pn_.getParam("incremental_stats_publish_rate", incremental_stats_publish_rate_new))
+  {
+    if (incremental_stats_publish_rate_new != incremental_stats_publish_rate_ && incremental_stats_publish_rate_new > 0)
+    {
+      incremental_stats_timer_ = nh_.createTimer(ros::Duration(incremental_stats_publish_rate_new),
+                                                 &PackmlRos::publishIncrementalStatsCb, this);
+    }
+  }
+
+  packml_msgs::Stats stats;
+  getIncrementalStats(stats);
+  incremental_stats_pub_.publish(stats);
 }
 
 bool PackmlRos::loadStats(packml_msgs::LoadStats::Request &req, packml_msgs::LoadStats::Response &response)

@@ -35,8 +35,7 @@ namespace packml_sm
 class AbstractStateMachine
 {
 public:
-  EventHandler<AbstractStateMachine, StateChangedEventArgs> stateChangedEvent; /** Triggered during a state changed
-                                                                                  event. */
+  EventHandler<AbstractStateMachine, StateChangedEventArgs> stateChangedEvent; /** Triggered during a state changed event. */
 
   /**
    * @brief Constructor for AbstractStateMachine.
@@ -174,120 +173,142 @@ public:
   /**
    * @brief Accessor for the duration spent in idle time.
    *
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the idle state.
    */
-  double getIdleTime();
+  double getIdleTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in starting.
    *
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the starting state.
    */
-  double getStartingTime();
+  double getStartingTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in resetting.
    *
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the resetting state.
    */
-  double getResettingTime();
+  double getResettingTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in execute.
    *
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the execute state.
    */
-  double getExecuteTime();
+  double getExecuteTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in held.
    *
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the held state.
    */
-  double getHeldTime();
+  double getHeldTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in holding.
    *
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the holding state.
    */
-  double getHoldingTime();
+  double getHoldingTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in unholding.
    *
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the unholding state.
    */
-  double getUnholdingTime();
+  double getUnholdingTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in suspended.
    *
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the suspended state.
    */
-  double getSuspendedTime();
+  double getSuspendedTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in suspending.
    *
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the suspending state.
    */
-  double getSuspendingTime();
+  double getSuspendingTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in unsuspending.
    *
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the unsuspending state.
    */
-  double getUnsuspendingTime();
+  double getUnsuspendingTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in complete.
    *
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the complete state.
    */
-  double getCompleteTime();
+  double getCompleteTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in stopped.
    *
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the stopped state.
    */
-  double getStoppedTime();
+  double getStoppedTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in clearing.
    *
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the clearing state.
    */
-  double getClearingTime();
+  double getClearingTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in stopping.
    *
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the stopping state.
    */
-  double getStoppingTime();
+  double getStoppingTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in aborted.
    *
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the aborted state.
    */
-  double getAbortedTime();
+  double getAbortedTime(bool is_incremental=false);
 
   /**
    * @brief Accessor for the duration spent in aborting.
    *
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the time spent in the aborting state.
    */
-  double getAbortingTime();
+  double getAbortingTime(bool is_incremental=false);
 
   /**
-   * @brief Reset all of the tracked states.
+   * @brief Reset all of the tracked stats.
    *
    */
   void resetStats();
+
+  /**
+   * @brief Reset all of the tracked incremental stats.
+   *
+   */
+  void resetIncrementalStats();
 
   /**
    * @brief Load all of the tracked states.
@@ -397,6 +418,13 @@ public:
    */
   void getCurrentStatSnapshot(PackmlStatsSnapshot& snapshot_out);
 
+  /**
+   * @brief Fills the reference variable with the current incremental stats
+   *
+   * @param snapshot_out Reference to the variable to fill the incremental stats data with.
+   */
+  void getCurrentIncrementalStatSnapshot(PackmlStatsSnapshot &snapshot_out);
+
 protected:
   /**
    * @brief Call to invoke a state changed event.
@@ -461,16 +489,21 @@ protected:
   virtual void _abort() = 0;
 
 private:
-  std::map<int16_t, PackmlStatsItemized> itemized_error_map_;
-  std::map<int16_t, PackmlStatsItemized> itemized_quality_map_;
-  int success_count_ = 0;        /** number of successful operations */
-  int failure_count_ = 0;        /** number of failed operations */
-  float ideal_cycle_time_ = 0.0; /** ideal cycle time in operations per second */
-
-  std::recursive_mutex stat_mutex_;                  /** stat mutex for protecting stat operations */
-  StatesEnum current_state_ = StatesEnum::UNDEFINED; /** cache of the current state */
-  std::map<StatesEnum, double> duration_map_; /** container for all of the durations referenced by their state id */
-  std::chrono::steady_clock::time_point start_time_; /** start time for the latest state entry */
+  std::map<int16_t, PackmlStatsItemized> itemized_error_map_;              /** count and duration of error items */
+  std::map<int16_t, PackmlStatsItemized> incremental_itemized_error_map_;  /** count and duration of error items for incremental stats */
+  std::map<int16_t, PackmlStatsItemized> itemized_quality_map_;            /** count and duration of quality items */
+  std::map<int16_t, PackmlStatsItemized> inremental_itemized_quality_map_; /** count and duration of quality items for incremental stats */
+  int success_count_ = 0;                                                  /** number of successful operations */
+  int incremental_success_count_ = 0;                                      /** number of successful operations for incremental stats */
+  int failure_count_ = 0;                                                  /** number of failed operations */
+  int incremental_failure_count_ = 0;                                      /** number of failed operations for incremental stats */
+  float ideal_cycle_time_ = 0.0;                                           /** ideal cycle time in operations per second */
+  std::recursive_mutex stat_mutex_;                                        /** stat mutex for protecting stat operations */
+  StatesEnum current_state_ = StatesEnum::UNDEFINED;                       /** cache of the current state */
+  std::map<StatesEnum, double> duration_map_;                              /** container for all of the durations referenced by their state id */
+  std::map<StatesEnum, double> incremental_duration_map_;                  /** container for all of the durations referenced by their state id for incremental stats */
+  std::chrono::steady_clock::time_point start_time_;                       /** start time for the latest state entry */
+  std::chrono::steady_clock::time_point incremental_start_time_;           /** start time for the latest state entry for incremental stats */
 
   /**
    * @brief adds or updates the specific itemized map
@@ -494,9 +527,10 @@ private:
    * @brief Accessor for the given state duration.
    *
    * @param state The state of interest.
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the total time spent in the given state.
    */
-  double getStateDuration(StatesEnum state);
+  double getStateDuration(StatesEnum state, bool is_incremental=false);
 
   /**
    * @brief Setter for the given state duration.
@@ -509,8 +543,9 @@ private:
   /**
    * @brief Accessor for the total duration of the state machine.
    *
+   * @param is_incremental=false flag to calculate stats incrementally or as a running sum
    * @return double Returns the total time spent in the state machine.
    */
-  double calculateTotalTime();
+  double calculateTotalTime(bool is_incremental=false);
 };
 }
