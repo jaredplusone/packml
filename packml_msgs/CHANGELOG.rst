@@ -2,8 +2,8 @@
 Changelog for package packml_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1000.2.0 (2019-10-23)
+---------------------
 * Added load stats service call `#3 <https://github.com/plusone-robotics/packml/issues/3>`_, `#5 <https://github.com/plusone-robotics/packml/issues/5>`_
 * Contributors: Charles Costello
 

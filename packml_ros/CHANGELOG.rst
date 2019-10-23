@@ -2,8 +2,8 @@
 Changelog for package packml_ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1000.2.0 (2019-10-23)
+---------------------
 * Added stats services `#3 <https://github.com/plusone-robotics/packml/issues/3>`_, `#5 <https://github.com/plusone-robotics/packml/issues/5>`_, `#7 <https://github.com/plusone-robotics/packml/issues/7>`_, `#6 <https://github.com/plusone-robotics/packml/issues/6>`_
 * Fix "can't locate node" issue  `#2 <https://github.com/plusone-robotics/packml/issues/2>`_
 * Contributors: Austin Deric, Charles Costello, Isaac I.Y. Saito
