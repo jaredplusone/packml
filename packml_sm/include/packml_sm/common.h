@@ -72,20 +72,30 @@ enum class ModeEnum
   SETUP = 11
 };
 
-enum class CmdEnum
+enum class CmdEnum : int
 {
-  UNDEFINED = 0,
-  CLEAR = 1,
-  START = 2,
-  STOP = 3,
-  HOLD = 4,
-  ABORT = 5,
-  RESET = 6,
-  ESTOP = 7,
+  NO_COMMAND=0,
+  RESET=1,
+  START=2,
+  STOP=3,
+  HOLD=4,
+  UNHOLD=5,
+  SUSPEND=6,
+  UNSUSPEND=7,
+  ABORT=8,
+  CLEAR=9
+};
 
-  SUSPEND = 100,
-  UNSUSPEND = 101,
-  UNHOLD = 102
+enum class EventsEnum : int
+{
+  UNDEFINED=0,
+  STATE_COMPLETE=1,
+  HOLD=2,
+  UNHOLD=3,
+  SUSPEND=4,
+  UNSUSPEND=5,
+  RESET=6,
+  CLEAR=7
 };
 }
 

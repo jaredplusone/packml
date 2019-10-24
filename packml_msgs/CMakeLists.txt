@@ -16,10 +16,12 @@ add_service_files(
   DIRECTORY srv
   FILES
     GetStats.srv
-    ModeChange.srv
-    Transition.srv
-    ResetStats.srv
+    InvokeStateChange.srv
     LoadStats.srv
+    ModeChange.srv
+    ResetStats.srv
+    SendCommand.srv
+    SendEvent.srv
 )
 
 

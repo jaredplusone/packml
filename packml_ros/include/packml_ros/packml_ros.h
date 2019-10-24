@@ -23,7 +23,7 @@
 #include <packml_msgs/GetStats.h>
 #include <packml_msgs/ResetStats.h>
 #include <packml_msgs/LoadStats.h>
-#include <packml_msgs/Transition.h>
+#include <packml_msgs/SendCommand.h>
 #include <packml_msgs/Status.h>
 #include <packml_msgs/Stats.h>
 #include <packml_sm/abstract_state_machine.h>
@@ -65,17 +65,19 @@ protected:
   ros::Publisher status_pub_;                           /** Publisher for Packml status */
   ros::Publisher stats_pub_;                            /** Publisher for Packml stats */
   ros::Publisher incremental_stats_pub_;                /** Publisher for incremental Packml stats */
-  ros::ServiceServer trans_server_;                     /** Advertises service to transition Packml state machine */
+  ros::ServiceServer command_server_;                   /** Advertises service to send commands to Packml state machine */
   ros::ServiceServer reset_stats_server_;               /** Advertises service for resetting stats */
   ros::ServiceServer get_stats_server_;                 /** Advertises service for getting stats */
   ros::ServiceServer load_stats_server_;                /** Advertises service for loading stats */
+  ros::ServiceServer events_server_;                    /** Advertises service to send events to Packml state machine */
+  ros::ServiceServer invoke_state_change_server_;       /** Advertises service to invoke a state change */
   packml_msgs::Status status_msg_;                      /** Message containing Packml status */
   double stats_publish_rate_;                           /** Rate at which rolling Packml stats are calculated and published */
   double incremental_stats_publish_rate_;               /** Rate at which incremental Packml stats are calculated and published */
   ros::Timer stats_timer_;                              /** Timer used to publish Packml stats */
   ros::Timer incremental_stats_timer_;                  /** Timer used to publish incremental Packml stats */
 
-  bool transRequest(packml_msgs::Transition::Request& req, packml_msgs::Transition::Response& res);
+  bool commandRequest(packml_msgs::SendCommand::Request& req, packml_msgs::SendCommand::Response& res);
 
 private:
   /**

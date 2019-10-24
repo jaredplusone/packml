@@ -35,10 +35,12 @@ PackmlRos::PackmlRos(ros::NodeHandle nh, ros::NodeHandle pn, std::shared_ptr<pac
   stats_pub_ = packml_node.advertise<packml_msgs::Stats>("stats", 10, true);
   incremental_stats_pub_ = packml_node.advertise<packml_msgs::Stats>("incremental_stats", 10, true);
 
-  trans_server_ = packml_node.advertiseService("transition", &PackmlRos::transRequest, this);
+  command_server_ = packml_node.advertiseService("send_command", &PackmlRos::commandRequest, this);
   reset_stats_server_ = packml_node.advertiseService("reset_stats", &PackmlRos::resetStats, this);
   get_stats_server_ = packml_node.advertiseService("get_stats", &PackmlRos::getStats, this);
   load_stats_server_ = packml_node.advertiseService("load_stats", &PackmlRos::loadStats, this);
+  //events_server_ = packml_node.advertiseService("send_event", )
+  //invoke_state_change_server_ = packml_node.advertiseService("invoke_state_change", )
 
   status_msg_ = packml_msgs::initStatus(pn.getNamespace());
 
@@ -99,7 +101,7 @@ void PackmlRos::spinOnce()
   ros::spinOnce();
 }
 
-bool PackmlRos::transRequest(packml_msgs::Transition::Request& req, packml_msgs::Transition::Response& res)
+bool PackmlRos::commandRequest(packml_msgs::SendCommand::Request& req, packml_msgs::SendCommand::Response& res)
 {
   bool command_rtn = false;
   bool command_valid = true;
@@ -110,7 +112,6 @@ bool PackmlRos::transRequest(packml_msgs::Transition::Request& req, packml_msgs:
   switch (command_int)
   {
     case req.ABORT:
-    case req.ESTOP:
       command_rtn = sm_->abort();
       break;
     case req.CLEAR:

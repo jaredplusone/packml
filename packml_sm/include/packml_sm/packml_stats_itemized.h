@@ -12,7 +12,7 @@ namespace packml_sm
 struct PackmlStatsItemized
 {
   int16_t id;
-  int32_t count;
+  double count;
   double duration;
 };
 }  // namespace packml_sm

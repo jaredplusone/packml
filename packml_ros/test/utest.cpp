@@ -38,13 +38,12 @@ TEST(Packml_ROS, sync_packml_cmd)
   using namespace packml_sm;
   EXPECT_EQ(static_cast<int>(CmdEnum::ABORT), Transition::Request::ABORT);
   EXPECT_EQ(static_cast<int>(CmdEnum::CLEAR), Transition::Request::CLEAR);
-  EXPECT_EQ(static_cast<int>(CmdEnum::ESTOP), Transition::Request::ESTOP);
   EXPECT_EQ(static_cast<int>(CmdEnum::HOLD), Transition::Request::HOLD);
   EXPECT_EQ(static_cast<int>(CmdEnum::RESET), Transition::Request::RESET);
   EXPECT_EQ(static_cast<int>(CmdEnum::START), Transition::Request::START);
   EXPECT_EQ(static_cast<int>(CmdEnum::STOP), Transition::Request::STOP);
   EXPECT_EQ(static_cast<int>(CmdEnum::SUSPEND), Transition::Request::SUSPEND);
-  EXPECT_EQ(static_cast<int>(CmdEnum::UNDEFINED), Transition::Request::UNDEFINED);
+  EXPECT_EQ(static_cast<int>(CmdEnum::NO_COMMAND), Transition::Request::NO_COMMAND);
   EXPECT_EQ(static_cast<int>(CmdEnum::UNHOLD), Transition::Request::UNHOLD);
   EXPECT_EQ(static_cast<int>(CmdEnum::UNSUSPEND), Transition::Request::UNSUSPEND);
 }
