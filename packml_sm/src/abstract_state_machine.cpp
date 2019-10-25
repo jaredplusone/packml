@@ -444,36 +444,36 @@ void AbstractStateMachine::loadStats(const PackmlStatsSnapshot &snapshot)
 }
 
 void AbstractStateMachine::incrementMapStatItem(std::map<int16_t, PackmlStatsItemized>& itemized_map, int16_t id,
-                                                int32_t count, double duration)
+                                                double step, double duration)
 {
   auto itemized_stat_it = itemized_map.find(id);
   if (itemized_stat_it != itemized_map.end())
   {
-    itemized_stat_it->second.count += count;
+    itemized_stat_it->second.count += step;
     itemized_stat_it->second.duration += duration;
   }
   else
   {
     PackmlStatsItemized new_stats;
     new_stats.id = id;
-    new_stats.count = count;
+    new_stats.count = step;
     new_stats.duration = duration;
     itemized_map.insert(std::pair<int16_t, PackmlStatsItemized>(id, new_stats));
   }
 }
 
-void AbstractStateMachine::incrementErrorStatItem(int16_t id, int32_t count, double duration)
+void AbstractStateMachine::incrementErrorStatItem(int16_t id, double step, double duration)
 {
   std::lock_guard<std::recursive_mutex> lock(stat_mutex_);
-  incrementMapStatItem(itemized_error_map_, id, count, duration);
-  incrementMapStatItem(incremental_itemized_error_map_, id, count, duration);
+  incrementMapStatItem(itemized_error_map_, id, step, duration);
+  incrementMapStatItem(incremental_itemized_error_map_, id, step, duration);
 }
 
-void AbstractStateMachine::incrementQualityStatItem(int16_t id, int32_t count, double duration)
+void AbstractStateMachine::incrementQualityStatItem(int16_t id, double step, double duration)
 {
   std::lock_guard<std::recursive_mutex> lock(stat_mutex_);
-  incrementMapStatItem(itemized_quality_map_, id, count, duration);
-  incrementMapStatItem(inremental_itemized_quality_map_, id, count, duration);
+  incrementMapStatItem(itemized_quality_map_, id, step, duration);
+  incrementMapStatItem(inremental_itemized_quality_map_, id, step, duration);
 }
 
 void AbstractStateMachine::incrementSuccessCount()

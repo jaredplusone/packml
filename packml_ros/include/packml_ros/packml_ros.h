@@ -24,6 +24,7 @@
 #include <packml_msgs/ResetStats.h>
 #include <packml_msgs/LoadStats.h>
 #include <packml_msgs/SendCommand.h>
+#include <packml_msgs/SendEvent.h>
 #include <packml_msgs/Status.h>
 #include <packml_msgs/Stats.h>
 #include <packml_sm/abstract_state_machine.h>
@@ -78,6 +79,7 @@ protected:
   ros::Timer incremental_stats_timer_;                  /** Timer used to publish incremental Packml stats */
 
   bool commandRequest(packml_msgs::SendCommand::Request& req, packml_msgs::SendCommand::Response& res);
+  bool eventRequest(packml_msgs::SendEvent::Request& req, packml_msgs::SendEvent::Response& res);
 
 private:
   /**

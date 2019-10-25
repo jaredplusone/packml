@@ -321,13 +321,13 @@ public:
    * @brief Call to increment or add a specific Itemized error stat.
    *
    */
-  void incrementErrorStatItem(int16_t id, int32_t count, double duration);
+  void incrementErrorStatItem(int16_t id, double count, double duration);
 
   /**
    * @brief Call to increment or add a specific Itemized quality stat.
    *
    */
-  void incrementQualityStatItem(int16_t id, int32_t count, double duration);
+  void incrementQualityStatItem(int16_t id, double count, double duration);
 
   /**
    * @brief Call to increment the successful operation count.
@@ -510,10 +510,10 @@ private:
    *
    * @param itemized_map the map to add or update.
    * @param id the id to add or update.
-   * @param count the number of occurences to add.
+   * @param step the amount to increment by.
    * @param duration the duration to add.
    */
-  void incrementMapStatItem(std::map<int16_t, PackmlStatsItemized>& itemized_map, int16_t id, int32_t count,
+  void incrementMapStatItem(std::map<int16_t, PackmlStatsItemized>& itemized_map, int16_t id, double step,
                             double duration);
 
   /**

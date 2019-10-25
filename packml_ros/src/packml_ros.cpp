@@ -16,12 +16,15 @@
  * limitations under the License.
  */
 
-#include "packml_ros/packml_ros.h"
-#include "packml_sm/packml_stats_snapshot.h"
-#include "packml_sm/packml_stats_itemized.h"
-
 #include <packml_msgs/utils.h>
 #include "packml_msgs/ItemizedStats.h"
+
+#include "packml_ros/packml_ros.h"
+
+#include <packml_sm/boost/packml_events.h>
+#include <packml_sm/common.h>
+#include "packml_sm/packml_stats_snapshot.h"
+#include "packml_sm/packml_stats_itemized.h"
 
 namespace packml_ros
 {
@@ -39,7 +42,7 @@ PackmlRos::PackmlRos(ros::NodeHandle nh, ros::NodeHandle pn, std::shared_ptr<pac
   reset_stats_server_ = packml_node.advertiseService("reset_stats", &PackmlRos::resetStats, this);
   get_stats_server_ = packml_node.advertiseService("get_stats", &PackmlRos::getStats, this);
   load_stats_server_ = packml_node.advertiseService("load_stats", &PackmlRos::loadStats, this);
-  //events_server_ = packml_node.advertiseService("send_event", )
+  events_server_ = packml_node.advertiseService("send_event", &PackmlRos::eventRequest, this);
   //invoke_state_change_server_ = packml_node.advertiseService("invoke_state_change", )
 
   status_msg_ = packml_msgs::initStatus(pn.getNamespace());
@@ -170,6 +173,41 @@ bool PackmlRos::commandRequest(packml_msgs::SendCommand::Request& req, packml_ms
     res.error_code = res.UNRECOGNIZED_REQUEST;
     res.message = ss.str();
   }
+}
+
+bool PackmlRos::eventRequest(packml_msgs::SendEvent::Request& req, packml_msgs::SendEvent::Response& res)
+{
+  auto event_id = req.val;
+  bool result = true;
+  // switch(event_id)
+  // {
+  //   case static_cast<int>(packml_sm::EventsEnum::STATE_COMPLETE):
+  //     sm_->triggerEvent(packml_sm::state_complete_event());
+  //     break;
+  //   case static_cast<int>(packml_sm::EventsEnum::HOLD):
+  //     sm_->triggerEvent(packml_sm::hold_event());
+  //     break;
+  //   case static_cast<int>(packml_sm::EventsEnum::UNHOLD):
+  //     sm_->triggerEvent(packml_sm::unhold_event());
+  //     break;
+  //   case static_cast<int>(packml_sm::EventsEnum::SUSPEND):
+  //     sm_->triggerEvent(packml_sm::suspend_event());
+  //     break;
+  //   case static_cast<int>(packml_sm::EventsEnum::UNSUSPEND):
+  //     sm_->triggerEvent(packml_sm::unsuspend_event());
+  //     break;
+  //   case static_cast<int>(packml_sm::EventsEnum::RESET):
+  //     sm_->triggerEvent(packml_sm::reset_event());
+  //     break;
+  //   case static_cast<int>(packml_sm::EventsEnum::CLEAR):
+  //     sm_->triggerEvent(packml_sm::clear_event());
+  //     break;
+  //   default:
+  //     ROS_ERROR_STREAM_NAMED("packml", "Event request called with invalid event_id: " << event_id);
+  //     result = false;
+  // }
+  res.result = result;
+  return res.result;
 }
 
 void PackmlRos::handleStateChanged(packml_sm::AbstractStateMachine& state_machine,
