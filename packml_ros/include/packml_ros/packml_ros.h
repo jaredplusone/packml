@@ -21,13 +21,15 @@
 #include <ros/ros.h>
 
 #include <packml_msgs/GetStats.h>
-#include <packml_msgs/ResetStats.h>
+#include <packml_msgs/InvokeStateChange.h>
 #include <packml_msgs/LoadStats.h>
+#include <packml_msgs/ResetStats.h>
 #include <packml_msgs/SendCommand.h>
 #include <packml_msgs/SendEvent.h>
 #include <packml_msgs/Status.h>
 #include <packml_msgs/Stats.h>
 #include <packml_sm/abstract_state_machine.h>
+#include <packml_sm/boost/packml_state_machine_continuous.h>
 
 namespace packml_ros
 {
@@ -42,7 +44,7 @@ public:
    * @param pn Node handle
    * @param sm Packml state machine
    */
-  PackmlRos(ros::NodeHandle nh, ros::NodeHandle pn, std::shared_ptr<packml_sm::AbstractStateMachine> sm);
+  PackmlRos(ros::NodeHandle nh, ros::NodeHandle pn, std::shared_ptr<packml_sm::PackmlStateMachineContinuous> sm);
 
   /**
    * @brief Destructor for PackmlRos
@@ -62,7 +64,7 @@ public:
 protected:
   ros::NodeHandle nh_;                                  /** Node handle */
   ros::NodeHandle pn_;                                  /** Private node handle */
-  std::shared_ptr<packml_sm::AbstractStateMachine> sm_; /** Packml state machine */
+  std::shared_ptr<packml_sm::PackmlStateMachineContinuous> sm_; /** Packml state machine */
   ros::Publisher status_pub_;                           /** Publisher for Packml status */
   ros::Publisher stats_pub_;                            /** Publisher for Packml stats */
   ros::Publisher incremental_stats_pub_;                /** Publisher for incremental Packml stats */
@@ -80,6 +82,7 @@ protected:
 
   bool commandRequest(packml_msgs::SendCommand::Request& req, packml_msgs::SendCommand::Response& res);
   bool eventRequest(packml_msgs::SendEvent::Request& req, packml_msgs::SendEvent::Response& res);
+  bool triggerStateChange(packml_msgs::InvokeStateChange::Request& req, packml_msgs::InvokeStateChange::Response& res);
 
 private:
   /**

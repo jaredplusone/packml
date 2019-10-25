@@ -425,7 +425,6 @@ public:
    */
   void getCurrentIncrementalStatSnapshot(PackmlStatsSnapshot &snapshot_out);
 
-protected:
   /**
    * @brief Call to invoke a state changed event.
    *
@@ -434,6 +433,7 @@ protected:
    */
   void invokeStateChangedEvent(const std::string& name, StatesEnum value);
 
+protected:
   /**
    * @brief Override to call implementations version of start command.
    *

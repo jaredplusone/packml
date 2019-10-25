@@ -20,19 +20,10 @@
 #include <packml_ros/packml_ros.h>
 #include <packml_sm/boost/packml_state_machine_continuous.h>
 
-int myExecuteMethod()
-{
-  ROS_INFO_STREAM("This is my execute method(begin)");
-  ros::Duration(1.0).sleep();
-  ROS_INFO_STREAM("This is my execute method(end)");
-  return 0;  // returning zero indicates non-failure
-}
-
 int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "packml_node");
   auto sm = packml_sm::PackmlStateMachineContinuous::spawn();
-  sm->setExecute(std::bind(myExecuteMethod));
 
   packml_ros::PackmlRos sm_node(ros::NodeHandle(), ros::NodeHandle("~"), sm);
   sm_node.spin();
