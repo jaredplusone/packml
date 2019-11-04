@@ -15,13 +15,16 @@ add_message_files(
 add_service_files(
   DIRECTORY srv
   FILES
+    GetState.srv
     GetStats.srv
+    IncrementStat.srv
     InvokeStateChange.srv
     LoadStats.srv
     ModeChange.srv
     ResetStats.srv
     SendCommand.srv
     SendEvent.srv
+    StateTransition.srv
 )
 
 

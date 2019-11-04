@@ -80,7 +80,7 @@ int fail()
 
 TEST(Packml_SM, set_execute)
 {
-  std::shared_ptr<AbstractStateMachine> sm = PackmlStateMachineSingleCycle::spawn();
+  std::shared_ptr<PackmlStateMachineSingleCycle> sm = PackmlStateMachineSingleCycle::spawn();
   StateMachineVisitedStatesQueue queue(sm);
   sm->setExecute(std::bind(success));
   sm->activate();
@@ -88,30 +88,30 @@ TEST(Packml_SM, set_execute)
   ASSERT_TRUE(waitForState(StatesEnum::ABORTED, queue));
   ASSERT_TRUE(sm->clear());
   ASSERT_TRUE(waitForState(StatesEnum::CLEARING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::STOPPED, queue));
   ASSERT_TRUE(sm->reset());
   ASSERT_TRUE(waitForState(StatesEnum::RESETTING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::IDLE, queue));
   ASSERT_TRUE(sm->start());
   ASSERT_TRUE(waitForState(StatesEnum::STARTING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::EXECUTE, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::COMPLETING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::COMPLETE, queue));
   ASSERT_TRUE(sm->reset());
   ASSERT_TRUE(waitForState(StatesEnum::RESETTING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::IDLE, queue));
-  sm->setExecute(std::bind(fail));
-  ASSERT_TRUE(sm->start());
-  ASSERT_TRUE(waitForState(StatesEnum::STARTING, queue));
-  ASSERT_TRUE(waitForState(StatesEnum::EXECUTE, queue));
-  ASSERT_TRUE(waitForState(StatesEnum::ABORTING, queue));
-  ASSERT_TRUE(waitForState(StatesEnum::ABORTED, queue));
 }
 
 TEST(Packml_SC, state_diagram)
 {
   ROS_INFO_STREAM("SINGLE CYCLE::State diagram");
-  std::shared_ptr<AbstractStateMachine> sm = PackmlStateMachineSingleCycle::spawn();
+  std::shared_ptr<PackmlStateMachineSingleCycle> sm = PackmlStateMachineSingleCycle::spawn();
   StateMachineVisitedStatesQueue queue(sm);
 
   EXPECT_FALSE(sm->isActive());
@@ -125,45 +125,58 @@ TEST(Packml_SC, state_diagram)
 
   ASSERT_TRUE(sm->clear());
   ASSERT_TRUE(waitForState(StatesEnum::CLEARING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::STOPPED, queue));
 
   ASSERT_TRUE(sm->reset());
   ASSERT_TRUE(waitForState(StatesEnum::RESETTING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::IDLE, queue));
 
   ASSERT_TRUE(sm->start());
   ASSERT_TRUE(waitForState(StatesEnum::STARTING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::EXECUTE, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::COMPLETING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::COMPLETE, queue));
 
   ASSERT_TRUE(sm->reset());
   ASSERT_TRUE(waitForState(StatesEnum::RESETTING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::IDLE, queue));
 
   ASSERT_TRUE(sm->start());
   ASSERT_TRUE(waitForState(StatesEnum::STARTING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::EXECUTE, queue));
   ASSERT_TRUE(sm->hold());
   ASSERT_TRUE(waitForState(StatesEnum::HOLDING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::HELD, queue));
   ASSERT_TRUE(sm->unhold());
   ASSERT_TRUE(waitForState(StatesEnum::UNHOLDING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::EXECUTE, queue));
 
   ASSERT_TRUE(sm->suspend());
   ASSERT_TRUE(waitForState(StatesEnum::SUSPENDING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::SUSPENDED, queue));
   ASSERT_TRUE(sm->unsuspend());
   ASSERT_TRUE(waitForState(StatesEnum::UNSUSPENDING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::EXECUTE, queue));
 
   ASSERT_TRUE(sm->stop());
   ASSERT_TRUE(waitForState(StatesEnum::STOPPING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::STOPPED, queue));
 
   ASSERT_TRUE(sm->abort());
   ASSERT_TRUE(waitForState(StatesEnum::ABORTING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::ABORTED, queue));
 
   sm->deactivate();
@@ -175,7 +188,7 @@ TEST(Packml_SC, state_diagram)
 TEST(Packml_CC, state_diagram)
 {
   ROS_INFO_STREAM("CONTINUOUS CYCLE::State diagram");
-  std::shared_ptr<AbstractStateMachine> sm = PackmlStateMachineContinuous::spawn();
+  std::shared_ptr<PackmlStateMachineContinuous> sm = PackmlStateMachineContinuous::spawn();
   StateMachineVisitedStatesQueue queue(sm);
   EXPECT_FALSE(sm->isActive());
   sm->setExecute(std::bind(success));
@@ -188,40 +201,51 @@ TEST(Packml_CC, state_diagram)
 
   ASSERT_TRUE(sm->clear());
   ASSERT_TRUE(waitForState(StatesEnum::CLEARING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::STOPPED, queue));
 
   ASSERT_TRUE(sm->reset());
   ASSERT_TRUE(waitForState(StatesEnum::RESETTING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::IDLE, queue));
 
   ASSERT_TRUE(sm->start());
   ASSERT_TRUE(waitForState(StatesEnum::STARTING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::EXECUTE, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_FALSE(waitForState(StatesEnum::COMPLETING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_FALSE(waitForState(StatesEnum::COMPLETE, queue));
 
   ASSERT_TRUE(sm->hold());
   ASSERT_TRUE(waitForState(StatesEnum::HOLDING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::HELD, queue));
 
   ASSERT_TRUE(sm->unhold());
   ASSERT_TRUE(waitForState(StatesEnum::UNHOLDING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::EXECUTE, queue));
 
   ASSERT_TRUE(sm->suspend());
   ASSERT_TRUE(waitForState(StatesEnum::SUSPENDING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::SUSPENDED, queue));
 
   ASSERT_TRUE(sm->unsuspend());
   ASSERT_TRUE(waitForState(StatesEnum::UNSUSPENDING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::EXECUTE, queue));
 
   ASSERT_TRUE(sm->stop());
   ASSERT_TRUE(waitForState(StatesEnum::STOPPING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::STOPPED, queue));
 
   ASSERT_TRUE(sm->abort());
   ASSERT_TRUE(waitForState(StatesEnum::ABORTING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::ABORTED, queue));
 
   sm->deactivate();
@@ -334,7 +358,7 @@ TEST(Packml_CC, getCurrentStatTransaction_empty)
 TEST(Packml_CC, getCurrentStatTransaction_durations)
 {
   ROS_INFO_STREAM("CONTINUOUS CYCLE::stats transaction durations");
-  std::shared_ptr<AbstractStateMachine> sm = PackmlStateMachineContinuous::spawn();
+  std::shared_ptr<PackmlStateMachineContinuous> sm = PackmlStateMachineContinuous::spawn();
   StateMachineVisitedStatesQueue queue(sm);
   packml_sm::PackmlStatsSnapshot snapshot_out;
 
@@ -347,44 +371,55 @@ TEST(Packml_CC, getCurrentStatTransaction_durations)
 
   ASSERT_TRUE(sm->clear());
   ASSERT_TRUE(waitForState(StatesEnum::CLEARING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::STOPPED, queue));
   ros::Duration(2.0).sleep();
 
   ASSERT_TRUE(sm->reset());
   ASSERT_TRUE(waitForState(StatesEnum::RESETTING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::IDLE, queue));
   ros::Duration(2.0).sleep();
 
   ASSERT_TRUE(sm->start());
   ASSERT_TRUE(waitForState(StatesEnum::STARTING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::EXECUTE, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_FALSE(waitForState(StatesEnum::COMPLETING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_FALSE(waitForState(StatesEnum::COMPLETE, queue));
 
   ASSERT_TRUE(sm->hold());
   ASSERT_TRUE(waitForState(StatesEnum::HOLDING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::HELD, queue));
 
   ASSERT_TRUE(sm->unhold());
   ASSERT_TRUE(waitForState(StatesEnum::UNHOLDING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::EXECUTE, queue));
 
   ASSERT_TRUE(sm->suspend());
   ASSERT_TRUE(waitForState(StatesEnum::SUSPENDING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::SUSPENDED, queue));
   ros::Duration(2.0).sleep();
 
   ASSERT_TRUE(sm->unsuspend());
   ASSERT_TRUE(waitForState(StatesEnum::UNSUSPENDING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::EXECUTE, queue));
 
   ASSERT_TRUE(sm->stop());
   ASSERT_TRUE(waitForState(StatesEnum::STOPPING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::STOPPED, queue));
   ros::Duration(2.0).sleep();
 
   ASSERT_TRUE(sm->abort());
   ASSERT_TRUE(waitForState(StatesEnum::ABORTING, queue));
+  sm->triggerEvent(state_complete_event());
   ASSERT_TRUE(waitForState(StatesEnum::ABORTED, queue));
   ros::Duration(2.0).sleep();
 
