@@ -24,7 +24,6 @@ add_service_files(
     ResetStats.srv
     SendCommand.srv
     SendEvent.srv
-    StateTransition.srv
 )
 
 

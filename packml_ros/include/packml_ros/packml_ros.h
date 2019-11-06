@@ -168,6 +168,10 @@ private:
    * @brief Publishes Packml stats
    */
   void publishStats();
+
+  bool commandGuard(const int& command_int, bool &command_valid, bool &command_rtn);
+
+  bool eventGuard(const int& event_id);
 };
 }  // namespace packml_ros
 

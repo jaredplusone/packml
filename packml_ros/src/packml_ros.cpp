@@ -112,40 +112,8 @@ bool PackmlRos::commandRequest(packml_msgs::SendCommand::Request& req, packml_ms
   std::stringstream ss;
   ROS_DEBUG_STREAM("Evaluating transition request command: " << command_int);
 
-  switch (command_int)
-  {
-    case req.ABORT:
-      command_rtn = sm_->abort();
-      break;
-    case req.CLEAR:
-      command_rtn = sm_->clear();
-      break;
-    case req.HOLD:
-      command_rtn = sm_->hold();
-      break;
-    case req.RESET:
-      command_rtn = sm_->reset();
-      break;
-    case req.START:
-      command_rtn = sm_->start();
-      break;
-    case req.STOP:
-      command_rtn = sm_->stop();
-      break;
-    case req.SUSPEND:
-      command_rtn = sm_->suspend();
-      break;
-    case req.UNHOLD:
-      command_rtn = sm_->unhold();
-      break;
-    case req.UNSUSPEND:
-      command_rtn = sm_->unsuspend();
-      break;
+  commandGuard(command_int, command_valid, command_rtn);
 
-    default:
-      command_valid = false;
-      break;
-  }
   if (command_valid)
   {
     if (command_rtn)
@@ -177,36 +145,8 @@ bool PackmlRos::commandRequest(packml_msgs::SendCommand::Request& req, packml_ms
 
 bool PackmlRos::eventRequest(packml_msgs::SendEvent::Request& req, packml_msgs::SendEvent::Response& res)
 {
-  auto event_id = req.val;
-  bool result = true;
-  switch(event_id)
-  {
-    case static_cast<int>(packml_sm::EventsEnum::STATE_COMPLETE):
-      sm_->triggerEvent(packml_sm::state_complete_event());
-      break;
-    case static_cast<int>(packml_sm::EventsEnum::HOLD):
-      sm_->triggerEvent(packml_sm::hold_event());
-      break;
-    case static_cast<int>(packml_sm::EventsEnum::UNHOLD):
-      sm_->triggerEvent(packml_sm::unhold_event());
-      break;
-    case static_cast<int>(packml_sm::EventsEnum::SUSPEND):
-      sm_->triggerEvent(packml_sm::suspend_event());
-      break;
-    case static_cast<int>(packml_sm::EventsEnum::UNSUSPEND):
-      sm_->triggerEvent(packml_sm::unsuspend_event());
-      break;
-    case static_cast<int>(packml_sm::EventsEnum::RESET):
-      sm_->triggerEvent(packml_sm::reset_event());
-      break;
-    case static_cast<int>(packml_sm::EventsEnum::CLEAR):
-      sm_->triggerEvent(packml_sm::clear_event());
-      break;
-    default:
-      ROS_ERROR_STREAM_NAMED("packml", "Event request called with invalid event_id: " << event_id);
-      result = false;
-  }
-  res.result = result;
+  auto event_id = req.event_id;
+  res.result = eventGuard(event_id);
   return res.result;
 }
 
@@ -405,6 +345,79 @@ bool PackmlRos::loadStats(packml_msgs::LoadStats::Request &req, packml_msgs::Loa
   packml_sm::PackmlStatsSnapshot snapshot = populateStatsSnapshot(req.stats);
   sm_->loadStats(snapshot);
 
+  return true;
+}
+
+bool PackmlRos::commandGuard(const int& command_int, bool& command_valid, bool& command_rtn)
+{
+  command_valid = true;
+  command_rtn = false;
+
+  switch (command_int)
+  {
+    case static_cast<int>(packml_sm::CmdEnum::ABORT):
+      command_rtn = sm_->abort();
+      break;
+    case static_cast<int>(packml_sm::CmdEnum::CLEAR):
+      command_rtn = sm_->clear();
+      break;
+    case static_cast<int>(packml_sm::CmdEnum::HOLD):
+      command_rtn = sm_->hold();
+      break;
+    case static_cast<int>(packml_sm::CmdEnum::RESET):
+      command_rtn = sm_->reset();
+      break;
+    case static_cast<int>(packml_sm::CmdEnum::START):
+      command_rtn = sm_->start();
+      break;
+    case static_cast<int>(packml_sm::CmdEnum::STOP):
+      command_rtn = sm_->stop();
+      break;
+    case static_cast<int>(packml_sm::CmdEnum::SUSPEND):
+      command_rtn = sm_->suspend();
+      break;
+    case static_cast<int>(packml_sm::CmdEnum::UNHOLD):
+      command_rtn = sm_->unhold();
+      break;
+    case static_cast<int>(packml_sm::CmdEnum::UNSUSPEND):
+      command_rtn = sm_->unsuspend();
+      break;
+
+    default:
+      command_valid = false;
+  }
+  return command_valid && command_rtn;
+}
+
+bool PackmlRos::eventGuard(const int& event_id)
+{
+  switch(event_id)
+  {
+    case static_cast<int>(packml_sm::EventsEnum::STATE_COMPLETE):
+      sm_->triggerEvent(packml_sm::state_complete_event());
+      break;
+    case static_cast<int>(packml_sm::EventsEnum::HOLD):
+      sm_->triggerEvent(packml_sm::hold_event());
+      break;
+    case static_cast<int>(packml_sm::EventsEnum::UNHOLD):
+      sm_->triggerEvent(packml_sm::unhold_event());
+      break;
+    case static_cast<int>(packml_sm::EventsEnum::SUSPEND):
+      sm_->triggerEvent(packml_sm::suspend_event());
+      break;
+    case static_cast<int>(packml_sm::EventsEnum::UNSUSPEND):
+      sm_->triggerEvent(packml_sm::unsuspend_event());
+      break;
+    case static_cast<int>(packml_sm::EventsEnum::RESET):
+      sm_->triggerEvent(packml_sm::reset_event());
+      break;
+    case static_cast<int>(packml_sm::EventsEnum::CLEAR):
+      sm_->triggerEvent(packml_sm::clear_event());
+      break;
+    default:
+      ROS_ERROR_STREAM_NAMED("packml", "Event request called with invalid event_id: " << event_id);
+      return false;
+  }
   return true;
 }
 }  // namespace kitsune_robot
