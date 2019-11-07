@@ -3,5 +3,5 @@
 # Example usage includes, error and warning events.
 
 int16 id                          # unique identifier (user defined)
-int32 count                       # number of occurances
+float32 count                     # number of occurances
 std_msgs/Duration duration        # duration in "item" state
