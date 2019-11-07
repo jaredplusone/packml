@@ -21,6 +21,7 @@
 #include <ros/ros.h>
 
 #include <packml_msgs/GetStats.h>
+#include <packml_msgs/IncrementStat.h>
 #include <packml_msgs/InvokeStateChange.h>
 #include <packml_msgs/LoadStats.h>
 #include <packml_msgs/ResetStats.h>
@@ -74,6 +75,7 @@ protected:
   ros::ServiceServer load_stats_server_;                /** Advertises service for loading stats */
   ros::ServiceServer events_server_;                    /** Advertises service to send events to Packml state machine */
   ros::ServiceServer invoke_state_change_server_;       /** Advertises service to invoke a state change */
+  ros::ServiceServer inc_stat_server_;                  /** Advertises service to increment a stat*/
   packml_msgs::Status status_msg_;                      /** Message containing Packml status */
   double stats_publish_rate_;                           /** Rate at which rolling Packml stats are calculated and published */
   double incremental_stats_publish_rate_;               /** Rate at which incremental Packml stats are calculated and published */
@@ -83,6 +85,7 @@ protected:
   bool commandRequest(packml_msgs::SendCommand::Request& req, packml_msgs::SendCommand::Response& res);
   bool eventRequest(packml_msgs::SendEvent::Request& req, packml_msgs::SendEvent::Response& res);
   bool triggerStateChange(packml_msgs::InvokeStateChange::Request& req, packml_msgs::InvokeStateChange::Response& res);
+  bool incStatRequest(packml_msgs::IncrementStat::Request& req, packml_msgs::IncrementStat::Response& res);
 
 private:
   /**
@@ -99,6 +102,8 @@ private:
    * @param out_stats Stats message
    */
   void getCurrentStats(packml_msgs::Stats& out_stats);
+
+  bool incStat(const int& metric, const double& step);
 
   /**
    * @brief Pepulates stats message with current incremental Packml stats

@@ -44,6 +44,7 @@ PackmlRos::PackmlRos(ros::NodeHandle nh, ros::NodeHandle pn, std::shared_ptr<pac
   load_stats_server_ = packml_node.advertiseService("load_stats", &PackmlRos::loadStats, this);
   events_server_ = packml_node.advertiseService("send_event", &PackmlRos::eventRequest, this);
   invoke_state_change_server_ = packml_node.advertiseService("invoke_state_change", &PackmlRos::triggerStateChange, this);
+  inc_stat_server_ = packml_node.advertiseService("inc_stat", &PackmlRos::incStatRequest, this);
 
   status_msg_ = packml_msgs::initStatus(pn.getNamespace());
 
@@ -154,6 +155,11 @@ bool PackmlRos::triggerStateChange(packml_msgs::InvokeStateChange::Request& req,
 {
   sm_->invokeStateChangedEvent(req.name, static_cast<packml_sm::StatesEnum>(req.state_enum));
   return true;
+}
+
+bool PackmlRos::incStatRequest(packml_msgs::IncrementStat::Request& req, packml_msgs::IncrementStat::Response& res)
+{
+    return incStat(req.metric, req.step);
 }
 
 void PackmlRos::handleStateChanged(packml_sm::AbstractStateMachine& state_machine,
@@ -419,5 +425,39 @@ bool PackmlRos::eventGuard(const int& event_id)
       return false;
   }
   return true;
+}
+
+bool PackmlRos::incStat(const int& metric, const double& step)
+{
+  bool result = true;
+  switch(metric)
+  {
+    case 0:
+      //do nothing
+      break;
+    case 1:
+      sm_->incrementSuccessCount();
+      break;
+    case 2:
+      sm_->incrementFailureCount();
+      break;
+    default:
+      if(metric >= 1000 && metric <= 1999)
+      {
+        sm_->incrementQualityStatItem(metric, step, 0.0);
+        break;
+      }
+      else if(metric >=2000 && metric <= 2999)
+      {
+        sm_->incrementErrorStatItem(metric, step, 0.0);
+        break;
+      }
+      else
+      {
+        ROS_ERROR_STREAM_NAMED("packml", "Increment stat request called with invalid metric id: " << metric);
+        result = false;
+      }
+  }
+  return result;
 }
 }  // namespace kitsune_robot
