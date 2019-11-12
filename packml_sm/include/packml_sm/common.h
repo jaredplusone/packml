@@ -35,7 +35,7 @@ std::ostream& operator<<(typename std::enable_if<std::is_enum<T>::value, std::os
 enum class StatesEnum
 {
   UNDEFINED = 0,
-  OFF = 1,
+  CLEARING = 1,
   STOPPED = 2,
   STARTING = 3,
   IDLE = 4,
@@ -46,20 +46,20 @@ enum class StatesEnum
   ABORTED = 9,
   HOLDING = 10,
   HELD = 11,
+  UNHOLDING = 12,
+  SUSPENDING = 13,
+  UNSUSPENDING = 14,
+  RESETTING = 15,
+  COMPLETING = 16,
+  COMPLETE = 17,
 
-  RESETTING = 100,
-  SUSPENDING = 101,
-  UNSUSPENDING = 102,
-  CLEARING = 103,
-  UNHOLDING = 104,
-  COMPLETING = 105,
-  COMPLETE = 106,
 
   // Super states that encapsulate multiple substates with a common transition
   // Not explicitly used in the standard but helpful for consutrcting the state
   // machine.
-  ABORTABLE = 200,
-  STOPPABLE = 201
+  OFF = 200,
+  ABORTABLE = 201,
+  STOPPABLE = 202
 };
 
 enum class ModeEnum
