@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-#include <packml_msgs/utils.h>
+#include <packml_ros/utils.h>
 #include "packml_msgs/ItemizedStats.h"
 
 #include "packml_ros/packml_ros.h"
@@ -46,7 +46,7 @@ PackmlRos::PackmlRos(ros::NodeHandle nh, ros::NodeHandle pn, std::shared_ptr<pac
   invoke_state_change_server_ = packml_node.advertiseService("invoke_state_change", &PackmlRos::triggerStateChange, this);
   inc_stat_server_ = packml_node.advertiseService("inc_stat", &PackmlRos::incStatRequest, this);
 
-  status_msg_ = packml_msgs::initStatus(pn.getNamespace());
+  status_msg_ = initStatus(pn.getNamespace());
 
   if (!pn_.getParam("stats_publish_rate", stats_publish_rate_))
   {
@@ -169,7 +169,7 @@ void PackmlRos::handleStateChanged(packml_sm::AbstractStateMachine& state_machin
 
   status_msg_.header.stamp = ros::Time().now();
   int cur_state = static_cast<int>(args.value);
-  if (packml_msgs::isStandardState(cur_state))
+  if (isStandardState(cur_state))
   {
     status_msg_.state.val = cur_state;
     status_msg_.sub_state = packml_msgs::State::UNDEFINED;
