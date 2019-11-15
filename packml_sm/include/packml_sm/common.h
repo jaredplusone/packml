@@ -97,6 +97,18 @@ enum class EventsEnum : int
   RESET=6,
   CLEAR=7
 };
-}
+
+enum class MetricIDEnum : int32_t
+{
+  CYCLE_INC_ID = 0,
+  SUCCESS_INC_ID = 1,
+  FAILURE_INC_ID = 2,
+  MIN_QUALITY_ID = 1000,
+  MAX_QUALITY_ID = 1999,
+  MIN_ERROR_ID = 2000,
+  MAX_ERROR_ID = 2999
+};
+
+} // End namespace packml_sm
 
 #endif  // COMMON_H

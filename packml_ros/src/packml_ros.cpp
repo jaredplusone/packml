@@ -142,13 +142,15 @@ bool PackmlRos::commandRequest(packml_msgs::SendCommand::Request& req, packml_ms
     res.error_code = res.UNRECOGNIZED_REQUEST;
     res.message = ss.str();
   }
+
+  return true;
 }
 
 bool PackmlRos::eventRequest(packml_msgs::SendEvent::Request& req, packml_msgs::SendEvent::Response& res)
 {
   auto event_id = req.event_id;
   res.result = eventGuard(event_id);
-  return res.result;
+  return true;
 }
 
 bool PackmlRos::triggerStateChange(packml_msgs::InvokeStateChange::Request& req, packml_msgs::InvokeStateChange::Response& res)
@@ -430,26 +432,29 @@ bool PackmlRos::eventGuard(const int& event_id)
 bool PackmlRos::incStat(const int& metric, const double& step)
 {
   bool result = true;
+
   switch(metric)
   {
-    case 0:
-      //do nothing
+    case static_cast<int32_t>(packml_sm::MetricIDEnum::CYCLE_INC_ID):
+      //do nothing, we don't have a way to increment cycle yet.
       break;
-    case 1:
+    case static_cast<int32_t>(packml_sm::MetricIDEnum::SUCCESS_INC_ID):
       sm_->incrementSuccessCount();
       break;
-    case 2:
+    case static_cast<int32_t>(packml_sm::MetricIDEnum::FAILURE_INC_ID):
       sm_->incrementFailureCount();
       break;
     default:
-      if(metric >= 1000 && metric <= 1999)
+      if(metric >= static_cast<int32_t>(packml_sm::MetricIDEnum::MIN_QUALITY_ID)
+        && metric <= static_cast<int32_t>(packml_sm::MetricIDEnum::MAX_QUALITY_ID))
       {
-        sm_->incrementQualityStatItem(metric, step, 0.0);
+        sm_->incrementQualityStatItem(metric, step);
         break;
       }
-      else if(metric >=2000 && metric <= 2999)
+      else if(metric >= static_cast<int32_t>(packml_sm::MetricIDEnum::MIN_ERROR_ID)
+        && metric <= static_cast<int32_t>(packml_sm::MetricIDEnum::MAX_ERROR_ID))
       {
-        sm_->incrementErrorStatItem(metric, step, 0.0);
+        sm_->incrementErrorStatItem(metric, step);
         break;
       }
       else

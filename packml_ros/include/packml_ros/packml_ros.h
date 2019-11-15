@@ -31,6 +31,7 @@
 #include <packml_msgs/Stats.h>
 #include <packml_sm/abstract_state_machine.h>
 #include <packml_sm/boost/packml_state_machine_continuous.h>
+#include <packml_sm/common.h>
 
 namespace packml_ros
 {
@@ -82,9 +83,35 @@ protected:
   ros::Timer stats_timer_;                              /** Timer used to publish Packml stats */
   ros::Timer incremental_stats_timer_;                  /** Timer used to publish incremental Packml stats */
 
+  /**
+   * @brief Processes external packml commands
+   * @details See OMAC PackML Unit/Machine Implementation Guide for command details
+   *
+   * @return True if request is processed, False otherwise
+   */
   bool commandRequest(packml_msgs::SendCommand::Request& req, packml_msgs::SendCommand::Response& res);
+
+  /**
+   * @brief Processes external packml events
+   * @details See OMAC PackML Unit/Machine Implementation Guide for event details
+   *
+   * @return True if request is processed, False otherwise
+   */
   bool eventRequest(packml_msgs::SendEvent::Request& req, packml_msgs::SendEvent::Response& res);
+
+  /**
+   * @brief Processes state change invocations
+   * @details Does not update actual state, but allows updates timers to track the desired state
+   *
+   * @return True if request is processed, False otherwise
+   */
   bool triggerStateChange(packml_msgs::InvokeStateChange::Request& req, packml_msgs::InvokeStateChange::Response& res);
+
+  /**
+   * @brief Processes request to increment statistics
+   *
+   * @return True if stat was processed successfully, False otherwise
+   */
   bool incStatRequest(packml_msgs::IncrementStat::Request& req, packml_msgs::IncrementStat::Response& res);
 
 private:
@@ -174,8 +201,23 @@ private:
    */
   void publishStats();
 
+  /**
+   * @brief Evaluates validity and effect of command request
+   * @details Issues the command, if valid, and returns result
+   *
+   * @param command_int Requested command to issue
+   * @param command_valid True if command is in the implemented standard, False otherwise
+   * @param command_rtn True if the command was accepted in the current context, False otherwise
+   * @return True if command is valid and was accpeted in the current context, False otherwise
+   */
   bool commandGuard(const int& command_int, bool &command_valid, bool &command_rtn);
 
+  /**
+   * @brief Evaluates validity of event and triggers if valid
+   *
+   * @param event_id Requested event to trigger
+   * @return True if the event is valid and was triggered in the state machine, false otherwise
+   */
   bool eventGuard(const int& event_id);
 };
 }  // namespace packml_ros

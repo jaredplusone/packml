@@ -444,7 +444,7 @@ void AbstractStateMachine::loadStats(const PackmlStatsSnapshot &snapshot)
 }
 
 void AbstractStateMachine::incrementMapStatItem(std::map<int16_t, PackmlStatsItemized>& itemized_map, int16_t id,
-                                                double step, double duration)
+                                                float step, float duration)
 {
   auto itemized_stat_it = itemized_map.find(id);
   if (itemized_stat_it != itemized_map.end())
@@ -462,14 +462,14 @@ void AbstractStateMachine::incrementMapStatItem(std::map<int16_t, PackmlStatsIte
   }
 }
 
-void AbstractStateMachine::incrementErrorStatItem(int16_t id, double step, double duration)
+void AbstractStateMachine::incrementErrorStatItem(int16_t id, float step, float duration)
 {
   std::lock_guard<std::recursive_mutex> lock(stat_mutex_);
   incrementMapStatItem(itemized_error_map_, id, step, duration);
   incrementMapStatItem(incremental_itemized_error_map_, id, step, duration);
 }
 
-void AbstractStateMachine::incrementQualityStatItem(int16_t id, double step, double duration)
+void AbstractStateMachine::incrementQualityStatItem(int16_t id, float step, float duration)
 {
   std::lock_guard<std::recursive_mutex> lock(stat_mutex_);
   incrementMapStatItem(itemized_quality_map_, id, step, duration);

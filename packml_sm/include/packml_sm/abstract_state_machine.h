@@ -321,13 +321,13 @@ public:
    * @brief Call to increment or add a specific Itemized error stat.
    *
    */
-  void incrementErrorStatItem(int16_t id, double count, double duration);
+  void incrementErrorStatItem(int16_t id, float count, float duration = 0.0);
 
   /**
    * @brief Call to increment or add a specific Itemized quality stat.
    *
    */
-  void incrementQualityStatItem(int16_t id, double count, double duration);
+  void incrementQualityStatItem(int16_t id, float count, float duration = 0.0);
 
   /**
    * @brief Call to increment the successful operation count.
@@ -500,8 +500,8 @@ private:
   float ideal_cycle_time_ = 0.0;                                           /** ideal cycle time in operations per second */
   std::recursive_mutex stat_mutex_;                                        /** stat mutex for protecting stat operations */
   StatesEnum current_state_ = StatesEnum::UNDEFINED;                       /** cache of the current state */
-  std::map<StatesEnum, double> duration_map_;                              /** container for all of the durations referenced by their state id */
-  std::map<StatesEnum, double> incremental_duration_map_;                  /** container for all of the durations referenced by their state id for incremental stats */
+  std::map<StatesEnum, float> duration_map_;                               /** container for all of the durations referenced by their state id */
+  std::map<StatesEnum, float> incremental_duration_map_;                   /** container for all of the durations referenced by their state id for incremental stats */
   std::chrono::steady_clock::time_point start_time_;                       /** start time for the latest state entry */
   std::chrono::steady_clock::time_point incremental_start_time_;           /** start time for the latest state entry for incremental stats */
 
@@ -513,8 +513,8 @@ private:
    * @param step the amount to increment by.
    * @param duration the duration to add.
    */
-  void incrementMapStatItem(std::map<int16_t, PackmlStatsItemized>& itemized_map, int16_t id, double step,
-                            double duration);
+  void incrementMapStatItem(std::map<int16_t, PackmlStatsItemized>& itemized_map, int16_t id, float step,
+                            float duration);
 
   /**
    * @brief Updates all of the durations for the states based on the new state.
