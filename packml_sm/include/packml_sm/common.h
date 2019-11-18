@@ -35,7 +35,7 @@ std::ostream& operator<<(typename std::enable_if<std::is_enum<T>::value, std::os
 enum class StatesEnum
 {
   UNDEFINED = 0,
-  OFF = 1,
+  CLEARING = 1,
   STOPPED = 2,
   STARTING = 3,
   IDLE = 4,
@@ -46,20 +46,20 @@ enum class StatesEnum
   ABORTED = 9,
   HOLDING = 10,
   HELD = 11,
+  UNHOLDING = 12,
+  SUSPENDING = 13,
+  UNSUSPENDING = 14,
+  RESETTING = 15,
+  COMPLETING = 16,
+  COMPLETE = 17,
 
-  RESETTING = 100,
-  SUSPENDING = 101,
-  UNSUSPENDING = 102,
-  CLEARING = 103,
-  UNHOLDING = 104,
-  COMPLETING = 105,
-  COMPLETE = 106,
 
   // Super states that encapsulate multiple substates with a common transition
   // Not explicitly used in the standard but helpful for consutrcting the state
   // machine.
-  ABORTABLE = 200,
-  STOPPABLE = 201
+  OFF = 200,
+  ABORTABLE = 201,
+  STOPPABLE = 202
 };
 
 enum class ModeEnum
@@ -72,21 +72,43 @@ enum class ModeEnum
   SETUP = 11
 };
 
-enum class CmdEnum
+enum class CmdEnum : int
 {
-  UNDEFINED = 0,
-  CLEAR = 1,
-  START = 2,
-  STOP = 3,
-  HOLD = 4,
-  ABORT = 5,
-  RESET = 6,
-  ESTOP = 7,
-
-  SUSPEND = 100,
-  UNSUSPEND = 101,
-  UNHOLD = 102
+  NO_COMMAND=0,
+  RESET=1,
+  START=2,
+  STOP=3,
+  HOLD=4,
+  UNHOLD=5,
+  SUSPEND=6,
+  UNSUSPEND=7,
+  ABORT=8,
+  CLEAR=9
 };
-}
+
+enum class EventsEnum : int
+{
+  UNDEFINED=0,
+  STATE_COMPLETE=1,
+  HOLD=2,
+  UNHOLD=3,
+  SUSPEND=4,
+  UNSUSPEND=5,
+  RESET=6,
+  CLEAR=7
+};
+
+enum class MetricIDEnum : int32_t
+{
+  CYCLE_INC_ID = 0,
+  SUCCESS_INC_ID = 1,
+  FAILURE_INC_ID = 2,
+  MIN_QUALITY_ID = 1000,
+  MAX_QUALITY_ID = 1999,
+  MIN_ERROR_ID = 2000,
+  MAX_ERROR_ID = 2999
+};
+
+} // End namespace packml_sm
 
 #endif  // COMMON_H

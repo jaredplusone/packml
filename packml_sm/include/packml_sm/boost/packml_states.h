@@ -45,22 +45,6 @@ public:
     if (state_method_ != nullptr)
     {
       auto result = state_method_();
-      if (result == 0)
-      {
-        if (!is_exiting_)
-        {
-          state_machine_ptr->enqueue_event(state_complete_event());
-        }
-      }
-      else
-      {
-        DLog::LogInfo("Error running state method: %s", state_name_.c_str());
-        state_machine_ptr->enqueue_event(error_event());
-      }
-    }
-    else
-    {
-      state_machine_ptr->enqueue_event(state_complete_event());
     }
   }
 

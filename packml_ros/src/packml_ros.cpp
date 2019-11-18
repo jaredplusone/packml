@@ -16,17 +16,20 @@
  * limitations under the License.
  */
 
+#include <packml_ros/utils.h>
+#include "packml_msgs/ItemizedStats.h"
+
 #include "packml_ros/packml_ros.h"
+
+#include <packml_sm/boost/packml_events.h>
+#include <packml_sm/common.h>
 #include "packml_sm/packml_stats_snapshot.h"
 #include "packml_sm/packml_stats_itemized.h"
-
-#include <packml_msgs/utils.h>
-#include "packml_msgs/ItemizedStats.h"
 
 namespace packml_ros
 {
 
-PackmlRos::PackmlRos(ros::NodeHandle nh, ros::NodeHandle pn, std::shared_ptr<packml_sm::AbstractStateMachine> sm)
+PackmlRos::PackmlRos(ros::NodeHandle nh, ros::NodeHandle pn, std::shared_ptr<packml_sm::PackmlStateMachineContinuous> sm)
   : nh_(nh), pn_(pn), sm_(sm)
 {
   ros::NodeHandle packml_node("~/packml");
@@ -35,12 +38,15 @@ PackmlRos::PackmlRos(ros::NodeHandle nh, ros::NodeHandle pn, std::shared_ptr<pac
   stats_pub_ = packml_node.advertise<packml_msgs::Stats>("stats", 10, true);
   incremental_stats_pub_ = packml_node.advertise<packml_msgs::Stats>("incremental_stats", 10, true);
 
-  trans_server_ = packml_node.advertiseService("transition", &PackmlRos::transRequest, this);
+  command_server_ = packml_node.advertiseService("send_command", &PackmlRos::commandRequest, this);
   reset_stats_server_ = packml_node.advertiseService("reset_stats", &PackmlRos::resetStats, this);
   get_stats_server_ = packml_node.advertiseService("get_stats", &PackmlRos::getStats, this);
   load_stats_server_ = packml_node.advertiseService("load_stats", &PackmlRos::loadStats, this);
+  events_server_ = packml_node.advertiseService("send_event", &PackmlRos::eventRequest, this);
+  invoke_state_change_server_ = packml_node.advertiseService("invoke_state_change", &PackmlRos::triggerStateChange, this);
+  inc_stat_server_ = packml_node.advertiseService("inc_stat", &PackmlRos::incStatRequest, this);
 
-  status_msg_ = packml_msgs::initStatus(pn.getNamespace());
+  status_msg_ = initStatus(pn.getNamespace());
 
   if (!pn_.getParam("stats_publish_rate", stats_publish_rate_))
   {
@@ -99,7 +105,7 @@ void PackmlRos::spinOnce()
   ros::spinOnce();
 }
 
-bool PackmlRos::transRequest(packml_msgs::Transition::Request& req, packml_msgs::Transition::Response& res)
+bool PackmlRos::commandRequest(packml_msgs::SendCommand::Request& req, packml_msgs::SendCommand::Response& res)
 {
   bool command_rtn = false;
   bool command_valid = true;
@@ -107,41 +113,8 @@ bool PackmlRos::transRequest(packml_msgs::Transition::Request& req, packml_msgs:
   std::stringstream ss;
   ROS_DEBUG_STREAM("Evaluating transition request command: " << command_int);
 
-  switch (command_int)
-  {
-    case req.ABORT:
-    case req.ESTOP:
-      command_rtn = sm_->abort();
-      break;
-    case req.CLEAR:
-      command_rtn = sm_->clear();
-      break;
-    case req.HOLD:
-      command_rtn = sm_->hold();
-      break;
-    case req.RESET:
-      command_rtn = sm_->reset();
-      break;
-    case req.START:
-      command_rtn = sm_->start();
-      break;
-    case req.STOP:
-      command_rtn = sm_->stop();
-      break;
-    case req.SUSPEND:
-      command_rtn = sm_->suspend();
-      break;
-    case req.UNHOLD:
-      command_rtn = sm_->unhold();
-      break;
-    case req.UNSUSPEND:
-      command_rtn = sm_->unsuspend();
-      break;
+  commandGuard(command_int, command_valid, command_rtn);
 
-    default:
-      command_valid = false;
-      break;
-  }
   if (command_valid)
   {
     if (command_rtn)
@@ -169,6 +142,26 @@ bool PackmlRos::transRequest(packml_msgs::Transition::Request& req, packml_msgs:
     res.error_code = res.UNRECOGNIZED_REQUEST;
     res.message = ss.str();
   }
+
+  return true;
+}
+
+bool PackmlRos::eventRequest(packml_msgs::SendEvent::Request& req, packml_msgs::SendEvent::Response& res)
+{
+  auto event_id = req.event_id;
+  res.result = eventGuard(event_id);
+  return true;
+}
+
+bool PackmlRos::triggerStateChange(packml_msgs::InvokeStateChange::Request& req, packml_msgs::InvokeStateChange::Response& res)
+{
+  sm_->invokeStateChangedEvent(req.name, static_cast<packml_sm::StatesEnum>(req.state_enum));
+  return true;
+}
+
+bool PackmlRos::incStatRequest(packml_msgs::IncrementStat::Request& req, packml_msgs::IncrementStat::Response& res)
+{
+    return incStat(req.metric, req.step);
 }
 
 void PackmlRos::handleStateChanged(packml_sm::AbstractStateMachine& state_machine,
@@ -178,7 +171,7 @@ void PackmlRos::handleStateChanged(packml_sm::AbstractStateMachine& state_machin
 
   status_msg_.header.stamp = ros::Time().now();
   int cur_state = static_cast<int>(args.value);
-  if (packml_msgs::isStandardState(cur_state))
+  if (isStandardState(cur_state))
   {
     status_msg_.state.val = cur_state;
     status_msg_.sub_state = packml_msgs::State::UNDEFINED;
@@ -361,5 +354,115 @@ bool PackmlRos::loadStats(packml_msgs::LoadStats::Request &req, packml_msgs::Loa
   sm_->loadStats(snapshot);
 
   return true;
+}
+
+bool PackmlRos::commandGuard(const int& command_int, bool& command_valid, bool& command_rtn)
+{
+  command_valid = true;
+  command_rtn = false;
+
+  switch (command_int)
+  {
+    case static_cast<int>(packml_sm::CmdEnum::ABORT):
+      command_rtn = sm_->abort();
+      break;
+    case static_cast<int>(packml_sm::CmdEnum::CLEAR):
+      command_rtn = sm_->clear();
+      break;
+    case static_cast<int>(packml_sm::CmdEnum::HOLD):
+      command_rtn = sm_->hold();
+      break;
+    case static_cast<int>(packml_sm::CmdEnum::RESET):
+      command_rtn = sm_->reset();
+      break;
+    case static_cast<int>(packml_sm::CmdEnum::START):
+      command_rtn = sm_->start();
+      break;
+    case static_cast<int>(packml_sm::CmdEnum::STOP):
+      command_rtn = sm_->stop();
+      break;
+    case static_cast<int>(packml_sm::CmdEnum::SUSPEND):
+      command_rtn = sm_->suspend();
+      break;
+    case static_cast<int>(packml_sm::CmdEnum::UNHOLD):
+      command_rtn = sm_->unhold();
+      break;
+    case static_cast<int>(packml_sm::CmdEnum::UNSUSPEND):
+      command_rtn = sm_->unsuspend();
+      break;
+
+    default:
+      command_valid = false;
+  }
+  return command_valid && command_rtn;
+}
+
+bool PackmlRos::eventGuard(const int& event_id)
+{
+  switch(event_id)
+  {
+    case static_cast<int>(packml_sm::EventsEnum::STATE_COMPLETE):
+      sm_->triggerEvent(packml_sm::state_complete_event());
+      break;
+    case static_cast<int>(packml_sm::EventsEnum::HOLD):
+      sm_->triggerEvent(packml_sm::hold_event());
+      break;
+    case static_cast<int>(packml_sm::EventsEnum::UNHOLD):
+      sm_->triggerEvent(packml_sm::unhold_event());
+      break;
+    case static_cast<int>(packml_sm::EventsEnum::SUSPEND):
+      sm_->triggerEvent(packml_sm::suspend_event());
+      break;
+    case static_cast<int>(packml_sm::EventsEnum::UNSUSPEND):
+      sm_->triggerEvent(packml_sm::unsuspend_event());
+      break;
+    case static_cast<int>(packml_sm::EventsEnum::RESET):
+      sm_->triggerEvent(packml_sm::reset_event());
+      break;
+    case static_cast<int>(packml_sm::EventsEnum::CLEAR):
+      sm_->triggerEvent(packml_sm::clear_event());
+      break;
+    default:
+      ROS_ERROR_STREAM_NAMED("packml", "Event request called with invalid event_id: " << event_id);
+      return false;
+  }
+  return true;
+}
+
+bool PackmlRos::incStat(const int& metric, const double& step)
+{
+  bool result = true;
+
+  switch(metric)
+  {
+    case static_cast<int32_t>(packml_sm::MetricIDEnum::CYCLE_INC_ID):
+      //do nothing, we don't have a way to increment cycle yet.
+      break;
+    case static_cast<int32_t>(packml_sm::MetricIDEnum::SUCCESS_INC_ID):
+      sm_->incrementSuccessCount();
+      break;
+    case static_cast<int32_t>(packml_sm::MetricIDEnum::FAILURE_INC_ID):
+      sm_->incrementFailureCount();
+      break;
+    default:
+      if(metric >= static_cast<int32_t>(packml_sm::MetricIDEnum::MIN_QUALITY_ID)
+        && metric <= static_cast<int32_t>(packml_sm::MetricIDEnum::MAX_QUALITY_ID))
+      {
+        sm_->incrementQualityStatItem(metric, step);
+        break;
+      }
+      else if(metric >= static_cast<int32_t>(packml_sm::MetricIDEnum::MIN_ERROR_ID)
+        && metric <= static_cast<int32_t>(packml_sm::MetricIDEnum::MAX_ERROR_ID))
+      {
+        sm_->incrementErrorStatItem(metric, step);
+        break;
+      }
+      else
+      {
+        ROS_ERROR_STREAM_NAMED("packml", "Increment stat request called with invalid metric id: " << metric);
+        result = false;
+      }
+  }
+  return result;
 }
 }  // namespace kitsune_robot

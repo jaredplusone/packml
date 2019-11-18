@@ -54,6 +54,12 @@ public:
   virtual bool setUnholding(std::function<int()> state_method) override;
   virtual bool isActive() override;
 
+  template <typename EventType>
+  void triggerEvent(EventType evt)
+  {
+    boost_fsm_.process_event(evt);
+  }
+
 protected:
   PackmlStateMachine();
 

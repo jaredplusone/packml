@@ -19,30 +19,30 @@
 #include <packml_msgs/Status.h>
 #include "packml_sm/common.h"
 
-namespace packml_msgs
+namespace packml_ros
 {
 bool isStandardState(int state)
 {
   switch (state)
   {
-    case State::ABORTED:
-    case State::ABORTING:
-    case State::CLEARING:
-    case State::COMPLETE:
-    case State::COMPLETING:
-    case State::EXECUTE:
-    case State::HELD:
-    case State::HOLDING:
-    case State::IDLE:
-    case State::OFF:
-    case State::RESETTING:
-    case State::STARTING:
-    case State::STOPPED:
-    case State::STOPPING:
-    case State::SUSPENDED:
-    case State::SUSPENDING:
-    case State::UNHOLDING:
-    case State::UNSUSPENDING:
+    case packml_msgs::State::ABORTED:
+    case packml_msgs::State::ABORTING:
+    case packml_msgs::State::CLEARING:
+    case packml_msgs::State::COMPLETE:
+    case packml_msgs::State::COMPLETING:
+    case packml_msgs::State::EXECUTE:
+    case packml_msgs::State::HELD:
+    case packml_msgs::State::HOLDING:
+    case packml_msgs::State::IDLE:
+    case packml_msgs::State::OFF:
+    case packml_msgs::State::RESETTING:
+    case packml_msgs::State::STARTING:
+    case packml_msgs::State::STOPPED:
+    case packml_msgs::State::STOPPING:
+    case packml_msgs::State::SUSPENDED:
+    case packml_msgs::State::SUSPENDING:
+    case packml_msgs::State::UNHOLDING:
+    case packml_msgs::State::UNSUSPENDING:
       return true;
       break;
     default:
@@ -51,9 +51,9 @@ bool isStandardState(int state)
   }
 }
 
-Status initStatus(std::string node_name)
+packml_msgs::Status initStatus(std::string node_name)
 {
-  Status status;
+  packml_msgs::Status status;
   status.header.frame_id = node_name;
   status.state.val = packml_msgs::State::UNDEFINED;
   status.sub_state = packml_msgs::State::UNDEFINED;
