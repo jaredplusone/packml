@@ -2,6 +2,9 @@
 Changelog for package packml_sm
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1000.3.0 (2020-02-06)
 ---------------------
 * Added documentation, changed MapStat items to float (was double), and moved metric constants to enumeration
