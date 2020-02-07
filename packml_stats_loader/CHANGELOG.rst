@@ -2,8 +2,8 @@
 Changelog for package packml_stats_loader
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1000.3.0 (2020-02-06)
+---------------------
 * Removes packml_msgs  https://github.com/plusone-robotics/packml/pull/8
 * Contributors: Aaron Wood
 

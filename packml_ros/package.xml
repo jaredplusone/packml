@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>packml_ros</name>
-  <version>1000.2.0</version>
+  <version>1000.3.0</version>
   <description>ROS wrapper around packml state machine</description>
 
   <maintainer email="shaun.edwards@gmail.com">Shaun Edwards</maintainer>

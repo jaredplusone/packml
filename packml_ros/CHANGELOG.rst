@@ -2,8 +2,8 @@
 Changelog for package packml_ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1000.3.0 (2020-02-06)
+---------------------
 * Feature core `#43 <https://github.com/plusone-robotics/packml/issues/43>`_ state observer
 * Updated unit test definition to use SendCommand (replaces old Transition)
 * Added documentation, changed MapStat items to float (was double), and moved metric constants to enumeration

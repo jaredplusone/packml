@@ -2,8 +2,8 @@
 Changelog for package packml_sm
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1000.3.0 (2020-02-06)
+---------------------
 * Added documentation, changed MapStat items to float (was double), and moved metric constants to enumeration
 * Merge branch 'por_development' into feature-core-`#43 <https://github.com/plusone-robotics/packml/issues/43>`_-state-observer
 * Moved packml_msgs to separate repository. Updated StatesEnum to match OMAC Implementation v1.00
