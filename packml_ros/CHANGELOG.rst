@@ -2,8 +2,8 @@
 Changelog for package packml_ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1000.3.1 (2020-02-07)
+---------------------
 * [Fix] Missing install rule for packml_ros_node `#9 <https://github.com/plusone-robotics/packml/issues/9>`_ 
 * Contributors: Charles Costello
 
