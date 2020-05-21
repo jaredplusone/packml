@@ -211,6 +211,7 @@ void AbstractStateMachine::getCurrentStatSnapshot(PackmlStatsSnapshot& snapshot_
     quality = static_cast<float>(success_count_) / static_cast<float>(total_count);
   }
 
+  snapshot_out.cycle_count = total_count;
   snapshot_out.duration = scheduled_time;
   snapshot_out.idle_duration = getIdleTime();
   snapshot_out.exe_duration = getExecuteTime();
@@ -269,6 +270,7 @@ void AbstractStateMachine::getCurrentIncrementalStatSnapshot(PackmlStatsSnapshot
     quality = static_cast<float>(incremental_success_count_) / static_cast<float>(total_count);
   }
 
+  snapshot_out.cycle_count = total_count;
   snapshot_out.duration = scheduled_time;
   snapshot_out.idle_duration = getIdleTime(true);
   snapshot_out.exe_duration = getExecuteTime(true);

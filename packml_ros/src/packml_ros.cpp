@@ -204,6 +204,7 @@ packml_msgs::Stats PackmlRos::populateStatsMsg(const packml_sm::PackmlStatsSnaps
 {
   packml_msgs::Stats stats_msg;
 
+  stats_msg.cycle_count = stats_snapshot.cycle_count;
   stats_msg.idle_duration.data.fromSec(stats_snapshot.idle_duration);
   stats_msg.exe_duration.data.fromSec(stats_snapshot.exe_duration);
   stats_msg.held_duration.data.fromSec(stats_snapshot.held_duration);
