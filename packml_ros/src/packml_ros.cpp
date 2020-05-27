@@ -222,6 +222,7 @@ packml_msgs::Stats PackmlRos::populateStatsMsg(const packml_sm::PackmlStatsSnaps
   stats_msg.duration.data.fromSec(stats_snapshot.duration);
   stats_msg.fail_count = stats_snapshot.fail_count;
   stats_msg.success_count = stats_snapshot.success_count;
+  stats_msg.throughput = stats_snapshot.throughput;
   stats_msg.availability = stats_snapshot.availability;
   stats_msg.performance = stats_snapshot.performance;
   stats_msg.quality = stats_snapshot.quality;
