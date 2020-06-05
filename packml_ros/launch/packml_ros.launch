@@ -3,10 +3,12 @@
 
     <arg name="stats_publish_rate" default="1.0" doc="Rate at which rolling stats are calculated and published in seconds. 0 or less will not publish at all"/>
     <arg name="incremental_stats_publish_rate" default="900.0" doc="Rate at which incremental stats are calculated and published in seconds. 0 or less will not publish at all"/>
+    <arg name="ideal_cycle_time" default="0.1" doc="Ideal cycle time for the application"/>
 
     <node name="packml_ros_node" pkg="packml_ros" type="packml_ros_node" output="screen">
         <param name="stats_publish_rate" value="$(arg stats_publish_rate)"/>
         <param name="incremental_stats_publish_rate" value="$(arg incremental_stats_publish_rate)"/>
+        <param name="ideal_cycle_time" value="$(arg ideal_cycle_time)"/>
     </node>
 
 </launch>

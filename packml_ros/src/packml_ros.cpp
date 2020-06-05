@@ -77,8 +77,15 @@ PackmlRos::PackmlRos(ros::NodeHandle nh, ros::NodeHandle pn, std::shared_ptr<pac
                                                &PackmlRos::publishIncrementalStatsCb, this);
   }
 
+  if (!pn_.getParam("ideal_cycle_time", ideal_cycle_time_))
+  {
+    ROS_WARN_STREAM("Missing param: ideal_cycle_time. Defaulting to 0.1 second");
+    ideal_cycle_time_ = 0.1;
+  }
+
   sm_->stateChangedEvent.bind_member_func(this, &PackmlRos::handleStateChanged);
   sm_->activate();
+  sm_->setIdealCycleTime(ideal_cycle_time_);
 
 }
 
@@ -215,6 +222,7 @@ packml_msgs::Stats PackmlRos::populateStatsMsg(const packml_sm::PackmlStatsSnaps
   stats_msg.duration.data.fromSec(stats_snapshot.duration);
   stats_msg.fail_count = stats_snapshot.fail_count;
   stats_msg.success_count = stats_snapshot.success_count;
+  stats_msg.throughput = stats_snapshot.throughput;
   stats_msg.availability = stats_snapshot.availability;
   stats_msg.performance = stats_snapshot.performance;
   stats_msg.quality = stats_snapshot.quality;
