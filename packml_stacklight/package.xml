@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>packml_stacklight</name>
-  <version>1000.3.1</version>
+  <version>1000.3.2</version>
   <description>ROS node to bridge packxml state machine and digital output</description>
 
   <maintainer email="joshuahatz@gmail.com">Joshua Hatzenbuehler</maintainer>

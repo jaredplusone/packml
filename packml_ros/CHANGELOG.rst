@@ -2,9 +2,16 @@
 Changelog for package packml_ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1000.3.2 (2020-06-15)
+---------------------
+* [Fix] Added missing throughput and cycle count to populateStatsMsg
+* [Fix] Added install rule for launch folder
+* [Fix] Fixed constant zero performance and OEE by adding init clause to populate ideal_cycle_time from rosparam
+* Contributors: Krishna Bhatu, Aaron Wood
+
 1000.3.1 (2020-02-07)
 ---------------------
-* [Fix] Missing install rule for packml_ros_node `#9 <https://github.com/plusone-robotics/packml/issues/9>`_ 
+* [Fix] Missing install rule for packml_ros_node `#9 <https://github.com/plusone-robotics/packml/issues/9>`_
 * Contributors: Charles Costello
 
 1000.3.0 (2020-02-06)
