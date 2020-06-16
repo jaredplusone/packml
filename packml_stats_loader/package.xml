@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>packml_stats_loader</name>
-  <version>1000.3.1</version>
+  <version>1000.3.2</version>
   <description>Utility node that loads and saves packml stats</description>
 
   <maintainer email="charles.costello@plusonerobotics.com">Charles Costello</maintainer>
